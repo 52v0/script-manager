@@ -387,6 +387,7 @@
             line-height: 1.4;
         }
         
+<<<<<<< HEAD
         /* 增大滚动条，适配手机 */
         .log-content::-webkit-scrollbar {
             width: 20px;
@@ -407,6 +408,8 @@
             background: #555;
         }
         
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         .loading {
             text-align: center;
             padding: 30px;
@@ -485,7 +488,10 @@
             <div class="nav-tab active" data-tab="scripts">脚本执行</div>
             <div class="nav-tab" data-tab="schedules">定时任务</div>
             <div class="nav-tab" data-tab="logs">执行日志</div>
+<<<<<<< HEAD
             <div class="nav-tab" data-tab="settings">邮件设置</div>
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         </div>
         
         <div class="tab-content">
@@ -524,6 +530,7 @@
                     </div>
                 </div>
             </div>
+<<<<<<< HEAD
             
             <!-- 邮件设置 -->
             <div class="section" id="settings">
@@ -582,6 +589,8 @@
                     </div>
                 </div>
             </div>
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         </div>
     </div>
     
@@ -602,6 +611,7 @@
                     <label class="form-label">参数 (可选)</label>
                     <input type="text" class="form-control" id="execute-script-args" placeholder="例如: start">
                 </div>
+<<<<<<< HEAD
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="execute-email-on-success">
@@ -614,6 +624,8 @@
                         <label for="execute-email-on-failure">执行失败时发送邮件</label>
                     </div>
                 </div>
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('executeModal')">取消</button>
@@ -669,6 +681,7 @@
                         <label for="job-enabled">启用任务</label>
                     </div>
                 </div>
+<<<<<<< HEAD
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="job-email-on-success">
@@ -681,6 +694,8 @@
                         <label for="job-email-on-failure">执行失败时发送邮件</label>
                     </div>
                 </div>
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('addJobModal')">取消</button>
@@ -968,20 +983,27 @@
         function executeScript() {
             const scriptName = document.getElementById('execute-script-name').value;
             const args = document.getElementById('execute-script-args').value;
+<<<<<<< HEAD
             const emailOnSuccess = document.getElementById('execute-email-on-success').checked;
             const emailOnFailure = document.getElementById('execute-email-on-failure').checked;
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
             
             fetch('/api/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+<<<<<<< HEAD
                 body: JSON.stringify({ 
                     script: scriptName, 
                     args: args,
                     email_on_success: emailOnSuccess,
                     email_on_failure: emailOnFailure
                 })
+=======
+                body: JSON.stringify({ script: scriptName, args: args })
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
             })
             .then(response => {
                 if (!response.ok) throw new Error('网络错误');
@@ -1096,8 +1118,11 @@
             const cron = buildCronExpression();
             const enabled = document.getElementById('job-enabled').checked;
             const args = document.getElementById('job-args').value;
+<<<<<<< HEAD
             const emailOnSuccess = document.getElementById('job-email-on-success').checked;
             const emailOnFailure = document.getElementById('job-email-on-failure').checked;
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
             
             if (!jobId) {
                 alert('任务ID不能为空');
@@ -1120,9 +1145,13 @@
                     script: script, 
                     cron: cron, 
                     enabled: enabled, 
+<<<<<<< HEAD
                     args: args,
                     email_on_success: emailOnSuccess,
                     email_on_failure: emailOnFailure
+=======
+                    args: args
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
                 })
             })
             .then(response => {
@@ -1161,6 +1190,7 @@
                 });
         }
         
+<<<<<<< HEAD
         // 加载邮件设置
         function loadEmailSettings() {
             fetch('/api/email/settings')
@@ -1234,6 +1264,8 @@
             });
         }
         
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         // 打开编辑脚本简介模态框
         function openEditDescriptionModal(scriptName, description) {
             document.getElementById('edit-script-name').value = scriptName;
@@ -1306,8 +1338,15 @@
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadScripts();
+<<<<<<< HEAD
             loadEmailSettings();
         });
     </script>
 </body>
 </html>
+=======
+        });
+    </script>
+</body>
+</html>
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191

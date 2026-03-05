@@ -4,10 +4,13 @@ import subprocess
 import json
 import datetime
 import sys
+<<<<<<< HEAD
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 import threading
@@ -19,7 +22,10 @@ app = Flask(__name__)
 SCRIPTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
 JOBS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jobs.json")
 LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+<<<<<<< HEAD
 EMAIL_SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "email_settings.json")
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
 
 # 确保目录存在
 os.makedirs(SCRIPTS_DIR, exist_ok=True)
@@ -44,6 +50,7 @@ def save_jobs(jobs):
     with open(JOBS_FILE, 'w', encoding='utf-8') as f:
         json.dump(jobs, f, ensure_ascii=False, indent=2)
 
+<<<<<<< HEAD
 # 加载邮件设置
 def load_email_settings():
     if os.path.exists(EMAIL_SETTINGS_FILE):
@@ -121,6 +128,8 @@ def send_email(subject, content, script_name, status, log_content="", log_file_p
         print(f"邮件发送失败: {e}")
         return False
 
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
 # 全局任务字典
 jobs = load_jobs()
 
@@ -134,22 +143,31 @@ def register_jobs():
                     execute_script,
                     CronTrigger.from_crontab(job_info['cron']),
                     id=job_id,
+<<<<<<< HEAD
                     args=[
                         script_path, 
                         job_info.get('args', ''),
                         job_info.get('email_on_success', False),
                         job_info.get('email_on_failure', False)
                     ],
+=======
+                    args=[script_path, job_info.get('args', '')],
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
                     replace_existing=True
                 )
             except Exception as e:
                 print(f"注册任务失败 {job_id}: {e}")
 
 # 执行脚本
+<<<<<<< HEAD
 def execute_script(script_path, args="", email_on_success=False, email_on_failure=False):
     log_file = os.path.join(LOGS_DIR, f"{os.path.basename(script_path)}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
     log_content = ""
     success = False
+=======
+def execute_script(script_path, args=""):
+    log_file = os.path.join(LOGS_DIR, f"{os.path.basename(script_path)}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
     
     try:
         with open(log_file, 'w', encoding='utf-8') as f:
@@ -169,12 +187,16 @@ def execute_script(script_path, args="", email_on_success=False, email_on_failur
             
             for line in process.stdout:
                 f.write(line)
+<<<<<<< HEAD
                 log_content += line
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
                 print(line.strip())
             
             process.wait()
             f.write(f"[{datetime.datetime.now()}] 执行完成，退出码: {process.returncode}\n")
             
+<<<<<<< HEAD
             # 判断是否成功
             success = process.returncode == 0
             
@@ -192,6 +214,11 @@ def execute_script(script_path, args="", email_on_success=False, email_on_failur
         # 发送失败邮件
         if email_on_failure:
             send_email("", "", os.path.basename(script_path), "失败", log_content, log_file)
+=======
+    except Exception as e:
+        with open(log_file, 'w', encoding='utf-8') as f:
+            f.write(f"[{datetime.datetime.now()}] 执行失败: {e}\n")
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
 
 # 列出脚本
 def list_scripts():
@@ -232,8 +259,11 @@ def api_execute():
     data = request.json
     script = data.get('script')
     args = data.get('args', '')
+<<<<<<< HEAD
     email_on_success = data.get('email_on_success', False)
     email_on_failure = data.get('email_on_failure', False)
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
     
     if not script:
         return jsonify({'error': '脚本路径不能为空'}), 400
@@ -243,7 +273,11 @@ def api_execute():
         return jsonify({'error': '脚本不存在'}), 404
     
     # 异步执行
+<<<<<<< HEAD
     threading.Thread(target=execute_script, args=(script_path, args, email_on_success, email_on_failure)).start()
+=======
+    threading.Thread(target=execute_script, args=(script_path, args)).start()
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
     
     return jsonify({'message': '脚本开始执行'})
 
@@ -264,16 +298,22 @@ def api_add_job():
     if not os.path.exists(script_path):
         return jsonify({'error': '脚本不存在'}), 404
     
+<<<<<<< HEAD
     email_on_success = data.get('email_on_success', False)
     email_on_failure = data.get('email_on_failure', False)
     
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
     jobs[job_id] = {
         'script': script,
         'cron': cron,
         'enabled': enabled,
         'args': args,
+<<<<<<< HEAD
         'email_on_success': email_on_success,
         'email_on_failure': email_on_failure,
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         'created_at': datetime.datetime.now().isoformat()
     }
     
@@ -283,7 +323,11 @@ def api_add_job():
                 execute_script,
                 CronTrigger.from_crontab(cron),
                 id=job_id,
+<<<<<<< HEAD
                 args=[script_path, args, email_on_success, email_on_failure],
+=======
+                args=[script_path, args],
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
                 replace_existing=True
             )
         except Exception as e:
@@ -339,18 +383,24 @@ def api_update_job():
         except:
             pass
     
+<<<<<<< HEAD
     # 获取邮件设置
     email_on_success = data.get('email_on_success', jobs.get(job_id, {}).get('email_on_success', False))
     email_on_failure = data.get('email_on_failure', jobs.get(job_id, {}).get('email_on_failure', False))
     
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
     # 更新任务
     jobs[job_id] = {
         'script': script,
         'cron': cron,
         'enabled': enabled,
         'args': args,
+<<<<<<< HEAD
         'email_on_success': email_on_success,
         'email_on_failure': email_on_failure,
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
         'updated_at': datetime.datetime.now().isoformat()
     }
     
@@ -361,7 +411,11 @@ def api_update_job():
                 execute_script,
                 CronTrigger.from_crontab(cron),
                 id=job_id,
+<<<<<<< HEAD
                 args=[script_path, args, email_on_success, email_on_failure],
+=======
+                args=[script_path, args],
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
                 replace_existing=True
             )
         except Exception as e:
@@ -444,6 +498,7 @@ def api_update_script_description(script_name):
     
     return jsonify({'message': '脚本简介更新成功'})
 
+<<<<<<< HEAD
 # 获取邮件设置
 @app.route('/api/email/settings')
 def api_get_email_settings():
@@ -492,6 +547,8 @@ def api_test_email():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+=======
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191
 # 删除日志
 @app.route('/api/logs/delete/<filename>', methods=['POST'])
 def api_delete_log(filename):

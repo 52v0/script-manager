@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Script Manager
 
 一个基于Flask的Web脚本管理系统，支持在NAS上自动执行Python脚本，具有定时任务调度、日志管理和邮件通知功能。
@@ -79,3 +80,7 @@ http://localhost:5000
 ## 许可证
 
 MIT License
+=======
+# script-manager
+NAS自动执行python脚本
+>>>>>>> c86f52865b58c9111e64f45628d81b9434f8e191

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  script-manager:
+    build: .
+    container_name: script-manager
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./scripts:/app/scripts
+      - ./logs:/app/logs
+      - ./script_metadata.json:/app/script_metadata.json
+      - ./quark_downloader.py:/app/quark_downloader.py
+      - ./alist_downloader.py:/app/alist_downloader.py
+    environment:
+      - TZ=Asia/Shanghai
+      - PYTHONUNBUFFERED=1
+    networks:
+      - script-network
+
+networks:
+  script-network:
+    driver: bridge

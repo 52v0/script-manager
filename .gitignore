@@ -2,12 +2,14 @@
 email_settings.json
 jobs.json
 script_metadata.json
+email_config.json
 
 # 包含密码的脚本文件
 scripts/alist_downloader.py
 
 # Docker 构建脚本
 build-docker.sh
+email_docker_auto.py
 
 # 日志文件
 logs/

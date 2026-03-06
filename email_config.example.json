@@ -1,0 +1,6 @@
+{
+  "server": "imap.qq.com",
+  "username": "your-email@qq.com",
+  "password": "your-authorization-code",
+  "project_dir": "."
+}

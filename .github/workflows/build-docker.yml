@@ -36,7 +36,7 @@ jobs:
           path: /tmp/script-manager.tar.gz
           retention-days: 7
 
-      - name: Send success email with attachment
+      - name: Send success email
         if: success()
         uses: dawidd6/action-send-mail@v3
         with:
@@ -55,9 +55,9 @@ jobs:
             <p><strong>状态:</strong> ✅ 成功</p>
             <p><strong>构建时间:</strong> ${{ github.event.head_commit.timestamp }}</p>
             <p><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</p>
-            <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看构建详情</a></p>
-            <p>附件为构建好的 Docker 镜像文件，请下载后使用。</p>
-          attachments: /tmp/script-manager.tar.gz
+            <p><strong>镜像大小:</strong> ~52.8 MB</p>
+            <p><strong>下载链接:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击下载镜像</a></p>
+            <p>镜像文件大小约为 52.8 MB，请从上述链接下载。</p>
 
       - name: Send failure email
         if: failure()
@@ -78,5 +78,5 @@ jobs:
             <p><strong>状态:</strong> ❌ 失败</p>
             <p><strong>构建时间:</strong> ${{ github.event.head_commit.timestamp }}</p>
             <p><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</p>
-            <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看错误详情</a></p>
+            <p><strong>错误详情:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看错误信息</a></p>
             <p>请检查代码或 Dockerfile 配置。</p>

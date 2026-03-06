@@ -196,6 +196,14 @@
             <div class="section" id="settings">
                 <div class="card">
                     <h3>📧 邮件设置</h3>
+                    
+                    <!-- 导入导出按钮 -->
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                        <button class="btn btn-outline" onclick="importEmailSettings()">📥 导入配置</button>
+                        <button class="btn btn-outline" onclick="exportEmailSettings()">📤 导出配置</button>
+                        <input type="file" id="email-import-file" accept=".json" style="display: none;" onchange="handleEmailImport(event)">
+                    </div>
+                    
                     <div class="form-group">
                         <label class="form-label">SMTP服务器</label>
                         <input type="text" class="form-control" id="email-smtp" placeholder="smtp.gmail.com">
@@ -222,6 +230,39 @@
                             <label for="email-ssl">使用SSL/TLS加密</label>
                         </div>
                     </div>
+                    
+                    <!-- 邮件模板配置 -->
+                    <div style="margin-top: 30px; border-top: 1px solid #e0e0e0; padding-top: 20px;">
+                        <h4 style="margin-bottom: 15px; color: #444;">📝 邮件模板配置</h4>
+                        
+                        <div class="form-group">
+                            <label class="form-label">邮件主题模板</label>
+                            <input type="text" class="form-control" id="email-subject" placeholder="脚本执行通知 - {status}">
+                            <small style="color: #666; font-size: 12px;">可用变量: {script_name}, {status}, {time}</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">邮件内容模板</label>
+                            <textarea class="form-control" id="email-template" rows="8" placeholder="脚本名称: {script_name}
+执行状态: {status}
+执行时间: {time}
+
+日志内容:
+{log}"></textarea>
+                            <small style="color: #666; font-size: 12px;">可用变量: {script_name}, {status}, {time}, {log}</small>
+                        </div>
+                        
+                        <div style="background: #f8f9ff; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                            <h5 style="font-size: 13px; color: #667eea; margin-bottom: 10px;">📋 模板变量说明</h5>
+                            <ul style="font-size: 12px; color: #666; margin-left: 20px; line-height: 1.8;">
+                                <li><code>{script_name}</code> - 脚本名称</li>
+                                <li><code>{status}</code> - 执行状态（成功/失败）</li>
+                                <li><code>{time}</code> - 执行时间</li>
+                                <li><code>{log}</code> - 日志内容（前50行）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                     <div style="margin-top: 20px;">
                         <button class="btn btn-primary" onclick="saveEmailSettings()">💾 保存设置</button>
                         <button class="btn btn-outline" onclick="testEmail()">📧 测试发送</button>
@@ -773,6 +814,8 @@
                     document.getElementById('email-password').value = data.password || '';
                     document.getElementById('email-to').value = data.to || '';
                     document.getElementById('email-ssl').checked = data.ssl || false;
+                    document.getElementById('email-subject').value = data.subject || '';
+                    document.getElementById('email-template').value = data.template || '';
                 });
         }
         
@@ -783,7 +826,9 @@
                 from: document.getElementById('email-from').value,
                 password: document.getElementById('email-password').value,
                 to: document.getElementById('email-to').value,
-                ssl: document.getElementById('email-ssl').checked
+                ssl: document.getElementById('email-ssl').checked,
+                subject: document.getElementById('email-subject').value,
+                template: document.getElementById('email-template').value
             };
             
             fetch('/api/email/settings', {
@@ -803,6 +848,89 @@
                 .then(data => {
                     showNotification(data.message || data.error, data.error ? 'error' : 'success');
                 });
+        }
+        
+        // 导出邮件配置
+        function exportEmailSettings() {
+            fetch('/api/email/settings')
+                .then(r => r.json())
+                .then(data => {
+                    // 创建完整的配置对象（包含密码）
+                    const exportData = {
+                        smtp: data.smtp || '',
+                        port: data.port || '',
+                        from: data.from || '',
+                        to: data.to || '',
+                        ssl: data.ssl || false,
+                        subject: data.subject || '',
+                        template: data.template || '',
+                        export_time: new Date().toISOString(),
+                        version: '1.0'
+                    };
+                    
+                    // 提示用户输入密码（可选）
+                    const password = document.getElementById('email-password').value;
+                    if (password && password !== '***') {
+                        exportData.password = password;
+                    }
+                    
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `email-settings-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    showNotification('配置导出成功', 'success');
+                });
+        }
+        
+        // 导入邮件配置
+        function importEmailSettings() {
+            document.getElementById('email-import-file').click();
+        }
+        
+        // 处理导入文件
+        function handleEmailImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // 验证配置格式
+                    if (!data.smtp || !data.from) {
+                        showNotification('配置文件格式无效', 'error');
+                        return;
+                    }
+                    
+                    // 填充表单
+                    document.getElementById('email-smtp').value = data.smtp || '';
+                    document.getElementById('email-port').value = data.port || '';
+                    document.getElementById('email-from').value = data.from || '';
+                    document.getElementById('email-to').value = data.to || '';
+                    document.getElementById('email-ssl').checked = data.ssl || false;
+                    document.getElementById('email-subject').value = data.subject || '';
+                    document.getElementById('email-template').value = data.template || '';
+                    
+                    if (data.password) {
+                        document.getElementById('email-password').value = data.password;
+                    }
+                    
+                    showNotification('配置导入成功，请保存设置', 'success');
+                } catch (err) {
+                    showNotification('配置文件解析失败: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+            
+            // 清空文件输入，允许重复导入同一文件
+            event.target.value = '';
         }
     </script>
 </body>

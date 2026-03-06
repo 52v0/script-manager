@@ -55,6 +55,10 @@ Thumbs.db
 htmlcov/
 .tox/
 
+# 工作内容文件夹
+20260306/
+20*/
+
 # 其他
 *.bak
 *.tmp

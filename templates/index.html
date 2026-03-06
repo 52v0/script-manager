@@ -3,498 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>脚本管理器</title>
+    <title>脚本管理器 - 重构版</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        
-        .nav-tabs {
-            display: flex;
-            background: white;
-            border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .nav-tab {
-            flex: 1;
-            padding: 12px 20px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .nav-tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
-        }
-        
-        .nav-tab:hover:not(.active) {
-            background: #f0f0f0;
-        }
-        
-        .tab-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .section {
-            display: none;
-        }
-        
-        .section.active {
-            display: block;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .card h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #444;
-        }
-        
-        .script-list {
-            margin-top: 20px;
-        }
-        
-        .script-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .script-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-        }
-        
-        .script-info h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        
-        .script-info p {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-outline {
-            background: white;
-            border: 1px solid #667eea;
-            color: #667eea;
-        }
-        
-        .btn-outline:hover {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #ff4757;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #ff3742;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #444;
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-        }
-        
-        .form-select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-check input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-        
-        .cron-help {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .job-list {
-            margin-top: 20px;
-        }
-        
-        .job-item {
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-        
-        .job-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-        }
-        
-        .job-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-        
-        .job-header h4 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .job-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .job-details {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .job-details p {
-            margin-bottom: 5px;
-        }
-        
-        .log-list {
-            margin-top: 20px;
-        }
-        
-        .log-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            margin-bottom: 10px;
-        }
-        
-        .log-info h4 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .log-info p {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
-        
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            overflow: auto;
-        }
-        
-        .modal.show {
-            display: block;
-        }
-        
-        .modal-content {
-            background: white;
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h3 {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .close {
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-        
-        .close:hover {
-            color: #333;
-        }
-        
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 30px;
-        }
-        
-        .log-content {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        /* 增大滚动条，适配手机 */
-        .log-content::-webkit-scrollbar {
-            width: 20px;
-        }
-        
-        .log-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .log-content::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-            border: 4px solid #f1f1f1;
-        }
-        
-        .log-content::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-        }
-        
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
+        .nav-tabs { display: flex; background: white; border-radius: 8px; padding: 4px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; }
+        .nav-tab { flex: 1; padding: 12px 20px; text-align: center; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; font-weight: 500; min-width: 120px; }
+        .nav-tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 2px 4px rgba(102,126,234,0.3); }
+        .nav-tab:hover:not(.active) { background: #f0f0f0; }
+        .tab-content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #444; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(102,126,234,0.3); }
+        .btn-outline { background: white; border: 1px solid #667eea; color: #667eea; }
+        .btn-outline:hover { background: #667eea; color: white; }
+        .btn-danger { background: #ff4757; color: white; }
+        .btn-danger:hover { background: #ff3742; }
+        .btn-success { background: #2ed573; color: white; }
+        .btn-success:hover { background: #26b965; }
+        .btn-warning { background: #ffa502; color: white; }
+        .btn-warning:hover { background: #e69500; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* 上传区域 */
+        .upload-area { border: 2px dashed #667eea; border-radius: 8px; padding: 40px; text-align: center; background: #f8f9ff; transition: all 0.3s; cursor: pointer; }
+        .upload-area:hover { background: #eef1ff; border-color: #764ba2; }
+        .upload-area.dragover { background: #e8ecff; border-color: #764ba2; border-style: solid; }
+        .upload-icon { font-size: 48px; margin-bottom: 15px; }
+        
+        /* 队列状态卡片 */
+        .queue-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; }
+        
+        /* 任务列表 */
+        .task-list { margin-top: 20px; }
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; transition: all 0.3s; }
+        .task-item:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.1); }
+        .task-item.running { border-left: 4px solid #2ed573; }
+        .task-item.pending { border-left: 4px solid #ffa502; }
+        .task-item.completed { border-left: 4px solid #667eea; }
+        .task-item.failed { border-left: 4px solid #ff4757; }
+        .task-item.stopped { border-left: 4px solid #747d8c; }
+        
+        .task-info h4 { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+        .task-info p { font-size: 13px; color: #666; }
+        .task-status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-running { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .status-stopped { background: #e2e3e5; color: #383d41; }
+        
+        .task-actions { display: flex; gap: 8px; }
+        .task-actions .btn { padding: 6px 12px; font-size: 13px; }
+        
+        /* 模态框 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow: auto; }
+        .modal.show { display: block; }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 20px; font-weight: 600; }
+        .close { font-size: 24px; cursor: pointer; color: #999; }
+        .close:hover { color: #333; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #444; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+        .form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .form-select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; background: white; }
+        .form-check { display: flex; align-items: center; gap: 8px; }
+        
+        .script-list, .job-list, .log-list { margin-top: 20px; }
+        .script-item, .job-item, .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; }
+        .script-item:hover, .job-item:hover, .log-item:hover { border-color: #667eea; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .loading { text-align: center; padding: 30px; color: #666; }
         
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .tab-content {
-                padding: 20px;
-            }
-            
-            .nav-tabs {
-                flex-direction: column;
-                gap: 4px;
-            }
-            
-            .nav-tab {
-                padding: 10px;
-            }
-            
-            .script-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .script-item .btn {
-                align-self: flex-end;
-            }
-            
-            .job-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-            
-            .job-actions {
-                align-self: flex-end;
-            }
+            .container { padding: 10px; }
+            .nav-tabs { flex-direction: column; }
+            .task-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .task-actions { align-self: flex-end; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>脚本管理器</h1>
-            <p>远程管理和执行Python脚本，支持定时任务</p>
+            <h1>🚀 脚本管理器 v2.0</h1>
+            <p>支持执行队列、上传脚本、定时任务和邮件通知</p>
         </div>
         
         <div class="nav-tabs">
-            <div class="nav-tab active" data-tab="scripts">脚本执行</div>
-            <div class="nav-tab" data-tab="schedules">定时任务</div>
-            <div class="nav-tab" data-tab="logs">执行日志</div>
-            <div class="nav-tab" data-tab="settings">邮件设置</div>
+            <div class="nav-tab active" data-tab="scripts">📜 脚本管理</div>
+            <div class="nav-tab" data-tab="queue">⚡ 执行队列</div>
+            <div class="nav-tab" data-tab="schedules">⏰ 定时任务</div>
+            <div class="nav-tab" data-tab="logs">📋 执行日志</div>
+            <div class="nav-tab" data-tab="settings">📧 邮件设置</div>
         </div>
         
         <div class="tab-content">
-            <!-- 脚本执行 -->
+            <!-- 脚本管理 -->
             <div class="section active" id="scripts">
                 <div class="card">
-                    <h3>可用脚本</h3>
+                    <h3>📤 上传脚本</h3>
+                    <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-icon">📁</div>
+                        <p>点击或拖拽上传 Python 脚本 (.py)</p>
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">支持多个文件同时上传</p>
+                        <input type="file" id="file-input" multiple accept=".py" style="display: none;" onchange="handleFileUpload(event)">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📜 脚本列表</h3>
                     <div class="script-list" id="scripts-list">
-                        <div class="loading">加载中</div>
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 执行队列 -->
+            <div class="section" id="queue">
+                <div class="card">
+                    <h3>📊 队列状态</h3>
+                    <div class="queue-stats" id="queue-stats">
+                        <div class="stat-card">
+                            <h4>等待中</h4>
+                            <div class="number" id="stat-pending">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>运行中</h4>
+                            <div class="number" id="stat-running">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>已完成</h4>
+                            <div class="number" id="stat-completed">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>总任务</h4>
+                            <div class="number" id="stat-total">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>⚡ 任务列表</h3>
+                    <div class="task-list" id="task-list">
+                        <div class="loading">加载中...</div>
                     </div>
                 </div>
             </div>
@@ -503,11 +170,11 @@
             <div class="section" id="schedules">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3>定时任务</h3>
-                        <button class="btn btn-primary" onclick="openAddJobModal()">添加定时任务</button>
+                        <h3>⏰ 定时任务</h3>
+                        <button class="btn btn-primary" onclick="openAddJobModal()">+ 添加任务</button>
                     </div>
                     <div class="job-list" id="jobs-list">
-                        <div class="loading">加载中</div>
+                        <div class="loading">加载中...</div>
                     </div>
                 </div>
             </div>
@@ -516,11 +183,11 @@
             <div class="section" id="logs">
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3>执行日志</h3>
-                        <button class="btn btn-danger" id="delete-selected-logs" onclick="deleteSelectedLogs()" disabled>删除选中</button>
+                        <h3>📋 执行日志</h3>
+                        <button class="btn btn-danger" onclick="deleteAllLogs()">🗑️ 清空日志</button>
                     </div>
                     <div class="log-list" id="logs-list">
-                        <div class="loading">加载中</div>
+                        <div class="loading">加载中...</div>
                     </div>
                 </div>
             </div>
@@ -528,57 +195,36 @@
             <!-- 邮件设置 -->
             <div class="section" id="settings">
                 <div class="card">
-                    <h3>邮件设置</h3>
-                    <p style="color: #666; margin-bottom: 20px;">配置邮件发送功能，脚本执行完成或失败时可发送通知邮件。</p>
-                    
+                    <h3>📧 邮件设置</h3>
                     <div class="form-group">
                         <label class="form-label">SMTP服务器</label>
-                        <input type="text" class="form-control" id="email-smtp" placeholder="例如: smtp.gmail.com">
+                        <input type="text" class="form-control" id="email-smtp" placeholder="smtp.gmail.com">
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">SMTP端口</label>
-                        <input type="number" class="form-control" id="email-port" placeholder="例如: 587">
+                        <input type="number" class="form-control" id="email-port" placeholder="587">
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">发件人邮箱</label>
-                        <input type="email" class="form-control" id="email-from" placeholder="例如: your-email@gmail.com">
+                        <input type="email" class="form-control" id="email-from" placeholder="your-email@gmail.com">
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">邮箱密码/授权码</label>
-                        <input type="password" class="form-control" id="email-password" placeholder="邮箱密码或应用专用密码">
+                        <input type="password" class="form-control" id="email-password" placeholder="密码或应用专用密码">
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">收件人邮箱</label>
-                        <input type="email" class="form-control" id="email-to" placeholder="例如: recipient@example.com">
+                        <input type="email" class="form-control" id="email-to" placeholder="recipient@example.com">
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">邮件主题模板</label>
-                        <input type="text" class="form-control" id="email-subject" placeholder="默认: 脚本执行通知 - {status}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">邮件内容模板</label>
-                        <textarea class="form-control" id="email-template" rows="6" placeholder="可用变量: {script_name}, {status}, {time}, {log}"></textarea>
-                        <div class="form-help">
-                            可用变量: {script_name} - 脚本名称, {status} - 执行状态, {time} - 执行时间, {log} - 日志内容
-                        </div>
-                    </div>
-                    
                     <div class="form-group">
                         <div class="form-check">
                             <input type="checkbox" id="email-ssl">
                             <label for="email-ssl">使用SSL/TLS加密</label>
                         </div>
                     </div>
-                    
                     <div style="margin-top: 20px;">
-                        <button class="btn btn-primary" onclick="saveEmailSettings()">保存设置</button>
-                        <button class="btn btn-outline" onclick="testEmail()">测试发送</button>
+                        <button class="btn btn-primary" onclick="saveEmailSettings()">💾 保存设置</button>
+                        <button class="btn btn-outline" onclick="testEmail()">📧 测试发送</button>
                     </div>
                 </div>
             </div>
@@ -589,7 +235,7 @@
     <div class="modal" id="executeModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>执行脚本</h3>
+                <h3>▶️ 执行脚本</h3>
                 <span class="close" onclick="closeModal('executeModal')">&times;</span>
             </div>
             <div class="modal-body">
@@ -600,24 +246,24 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">参数 (可选)</label>
-                    <input type="text" class="form-control" id="execute-script-args" placeholder="例如: start">
+                    <input type="text" class="form-control" id="execute-script-args" placeholder="例如: --help">
                 </div>
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="execute-email-on-success">
-                        <label for="execute-email-on-success">执行成功时发送邮件</label>
+                        <label for="execute-email-on-success">✅ 执行成功时发送邮件</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="execute-email-on-failure">
-                        <label for="execute-email-on-failure">执行失败时发送邮件</label>
+                        <label for="execute-email-on-failure">❌ 执行失败时发送邮件</label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('executeModal')">取消</button>
-                <button class="btn btn-primary" onclick="executeScript()">执行</button>
+                <button class="btn btn-primary" onclick="executeScript()">🚀 执行</button>
             </div>
         </div>
     </div>
@@ -626,14 +272,14 @@
     <div class="modal" id="addJobModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="addJobModalTitle">添加定时任务</h3>
+                <h3>⏰ 添加定时任务</h3>
                 <span class="close" onclick="closeModal('addJobModal')">&times;</span>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="job-id">
                 <div class="form-group">
                     <label class="form-label">任务ID</label>
-                    <input type="text" class="form-control" id="job-id-input" placeholder="例如: download-job">
+                    <input type="text" class="form-control" id="job-id-input" placeholder="例如: daily-backup">
                 </div>
                 <div class="form-group">
                     <label class="form-label">选择脚本</label>
@@ -642,63 +288,59 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Cron表达式</label>
+                    <label class="form-label">Cron表达式 (分 时 日 月 周)</label>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
-                        <input type="text" class="form-control" id="cron-minute" placeholder="分" title="0-59">
-                        <input type="text" class="form-control" id="cron-hour" placeholder="时" title="0-23">
-                        <input type="text" class="form-control" id="cron-day" placeholder="日" title="1-31">
-                        <input type="text" class="form-control" id="cron-month" placeholder="月" title="1-12">
-                        <input type="text" class="form-control" id="cron-week" placeholder="周" title="0-7 (0和7都表示周日)">
+                        <input type="text" class="form-control" id="cron-minute" placeholder="分" value="0">
+                        <input type="text" class="form-control" id="cron-hour" placeholder="时" value="2">
+                        <input type="text" class="form-control" id="cron-day" placeholder="日" value="*">
+                        <input type="text" class="form-control" id="cron-month" placeholder="月" value="*">
+                        <input type="text" class="form-control" id="cron-week" placeholder="周" value="*">
                     </div>
                     <input type="hidden" id="job-cron">
-                    <div class="cron-help">
-                        <strong>格式:</strong> 分 时 日 月 周<br>
-                        <strong>示例:</strong><br>
-                        0 0 * * * - 每天凌晨<br>
-                        0 */2 * * * - 每2小时<br>
-                        0 9 * * 1-5 - 工作日上午9点
-                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        示例: 0 2 * * * (每天凌晨2点) | 0 */6 * * * (每6小时)
+                    </p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">参数 (可选)</label>
-                    <input type="text" class="form-control" id="job-args" placeholder="例如: start">
+                    <input type="text" class="form-control" id="job-args" placeholder="例如: --full">
                 </div>
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="job-enabled" checked>
-                        <label for="job-enabled">启用任务</label>
+                        <label for="job-enabled">✅ 启用任务</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="job-email-on-success">
-                        <label for="job-email-on-success">执行成功时发送邮件</label>
+                        <label for="job-email-on-success">✅ 成功时发送邮件</label>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="form-check">
                         <input type="checkbox" id="job-email-on-failure">
-                        <label for="job-email-on-failure">执行失败时发送邮件</label>
+                        <label for="job-email-on-failure">❌ 失败时发送邮件</label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('addJobModal')">取消</button>
-                <button class="btn btn-primary" onclick="saveJob()">保存</button>
+                <button class="btn btn-primary" onclick="saveJob()">💾 保存</button>
             </div>
         </div>
     </div>
     
     <!-- 日志详情模态框 -->
     <div class="modal" id="logModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h3>日志详情</h3>
+                <h3>📄 日志详情</h3>
                 <span class="close" onclick="closeModal('logModal')">&times;</span>
             </div>
             <div class="modal-body">
                 <h4 id="log-filename" style="margin-bottom: 15px;"></h4>
-                <div class="log-content" id="log-content"></div>
+                <pre id="log-content" style="background: #f8f9fa; padding: 15px; border-radius: 6px; max-height: 500px; overflow: auto; font-family: monospace; font-size: 13px;"></pre>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeModal('logModal')">关闭</button>
@@ -706,36 +348,11 @@
         </div>
     </div>
     
-    <!-- 编辑脚本简介模态框 -->
-    <div class="modal" id="editDescriptionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>编辑脚本简介</h3>
-                <span class="close" onclick="closeModal('editDescriptionModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-script-name">
-                <div class="form-group">
-                    <label class="form-label">脚本</label>
-                    <input type="text" class="form-control" id="edit-script-display" readonly>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">简介</label>
-                    <textarea class="form-control" id="edit-script-description" rows="4" placeholder="请输入脚本简介"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('editDescriptionModal')">取消</button>
-                <button class="btn btn-primary" onclick="saveScriptDescription()">保存</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 确认提示框模态框 -->
+    <!-- 确认模态框 -->
     <div class="modal" id="confirmModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>确认操作</h3>
+                <h3>⚠️ 确认操作</h3>
                 <span class="close" onclick="closeModal('confirmModal')">&times;</span>
             </div>
             <div class="modal-body">
@@ -749,565 +366,444 @@
     </div>
     
     <script>
-        // 标签页切换
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                
-                // 更新标签状态
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                
-                // 更新内容状态
-                document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                
-                // 加载对应内容
-                if (tabId === 'scripts') loadScripts();
-                if (tabId === 'schedules') loadJobs();
-                if (tabId === 'logs') loadLogs();
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScripts();
+            loadQueueStatus();
+            loadTasks();
+            
+            // 定时刷新队列状态
+            setInterval(() => {
+                loadQueueStatus();
+                loadTasks();
+            }, 3000);
+            
+            // 标签页切换
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    if (tabId === 'scripts') loadScripts();
+                    if (tabId === 'queue') { loadQueueStatus(); loadTasks(); }
+                    if (tabId === 'schedules') loadJobs();
+                    if (tabId === 'logs') loadLogs();
+                    if (tabId === 'settings') loadEmailSettings();
+                });
+            });
+            
+            // 拖拽上传
+            const uploadArea = document.getElementById('upload-area');
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFileUpload({ target: { files: e.dataTransfer.files } });
             });
         });
         
-        // 加载脚本列表
+        // ==================== 通用函数 ====================
+        function showModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        
+        function showConfirm(message, onConfirm) {
+            document.getElementById('confirm-message').textContent = message;
+            document.getElementById('confirm-button').onclick = () => {
+                closeModal('confirmModal');
+                onConfirm();
+            };
+            showModal('confirmModal');
+        }
+        
+        function showNotification(message, type = 'success') {
+            const div = document.createElement('div');
+            div.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 15px 20px; border-radius: 8px; color: white; z-index: 9999; font-weight: 500;`;
+            div.style.background = type === 'success' ? '#2ed573' : '#ff4757';
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+        
+        // ==================== 脚本管理 ====================
         function loadScripts() {
-            const scriptsList = document.getElementById('scripts-list');
-            const jobScriptSelect = document.getElementById('job-script');
-            
-            scriptsList.innerHTML = '<div class="loading">加载中</div>';
-            
             fetch('/api/scripts')
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
+                .then(r => r.json())
                 .then(scripts => {
-                    scriptsList.innerHTML = '';
-                    jobScriptSelect.innerHTML = '<option value="">请选择脚本</option>';
+                    const container = document.getElementById('scripts-list');
+                    const select = document.getElementById('job-script');
                     
                     if (scripts.length === 0) {
-                        scriptsList.innerHTML = '<div class="empty-state"><i>📁</i><p>暂无脚本</p><p style="font-size: 14px;">请将Python脚本放在scripts目录中</p></div>';
+                        container.innerHTML = '<div class="empty-state"><p>暂无脚本，请上传或添加脚本到 scripts 目录</p></div>';
                         return;
                     }
                     
-                    scripts.forEach(script => {
-                        // 添加到脚本列表
-                        const item = document.createElement('div');
-                        item.className = 'script-item';
-                        const description = script.description || '无简介';
-                        item.innerHTML = '<div class="script-info"><h4>' + script.name + '</h4><p>' + description + '</p><p style="font-size: 12px; color: #666;">' + (script.size / 1024).toFixed(2) + ' KB</p></div><div style="display: flex; gap: 10px;"><button class="btn btn-outline" onclick="openEditDescriptionModal(\'' + script.name + '\', \'' + (script.description || '') + '\')">编辑简介</button><button class="btn btn-primary" onclick="openExecuteModal(\'' + script.name + '\')">执行</button></div>';
-                        scriptsList.appendChild(item);
-                        
-                        // 添加到任务脚本选择
-                        const option = document.createElement('option');
-                        option.value = script.name;
-                        option.textContent = script.name;
-                        jobScriptSelect.appendChild(option);
-                    });
+                    container.innerHTML = scripts.map(s => `
+                        <div class="script-item">
+                            <div>
+                                <h4>📜 ${s.name}</h4>
+                                <p>${s.description || '无简介'} | ${(s.size/1024).toFixed(1)} KB</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-outline" onclick="deleteScript('${s.name}')">🗑️</button>
+                                <button class="btn btn-primary" onclick="openExecuteModal('${s.name}')">▶️ 执行</button>
+                            </div>
+                        </div>
+                    `).join('');
                     
-                })
-                .catch(error => {
-                    console.error('加载脚本失败:', error);
-                    scriptsList.innerHTML = '<div class="empty-state" style="color: #ff4757;"><i>❌</i><p>加载失败</p><p style="font-size: 14px;">请检查服务是否运行</p></div>';
+                    select.innerHTML = '<option value="">请选择脚本</option>' + 
+                        scripts.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
                 });
         }
         
-        // 加载任务列表
-        function loadJobs() {
-            const jobsList = document.getElementById('jobs-list');
-            jobsList.innerHTML = '<div class="loading">加载中</div>';
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            if (!files.length) return;
             
-            fetch('/api/jobs')
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
-                .then(jobs => {
-                    jobsList.innerHTML = '';
-                    
-                    if (Object.keys(jobs).length === 0) {
-                        jobsList.innerHTML = '<div class="empty-state"><i>⏰</i><p>暂无定时任务</p><p style="font-size: 14px;">点击上方按钮添加任务</p></div>';
-                        return;
-                    }
-                    
-                    Object.entries(jobs).forEach(([jobId, job]) => {
-                        const item = document.createElement('div');
-                        item.className = 'job-item';
-                        let argsHtml = job.args ? '<p><strong>参数:</strong> ' + job.args + '</p>' : '';
-                        item.innerHTML = '<div class="job-header"><h4>' + jobId + '</h4><div class="job-actions"><button class="btn btn-outline" onclick="editJob(\'' + jobId + '\')">编辑</button><button class="btn btn-danger" onclick="deleteJob(\'' + jobId + '\')">删除</button></div></div><div class="job-details"><p><strong>脚本:</strong> ' + job.script + '</p><p><strong>Cron:</strong> ' + job.cron + '</p><p><strong>状态:</strong> ' + (job.enabled ? '启用' : '禁用') + '</p>' + argsHtml + '</div>';
-                        jobsList.appendChild(item);
-                    });
-                })
-                .catch(error => {
-                    console.error('加载任务失败:', error);
-                    jobsList.innerHTML = '<div class="empty-state" style="color: #ff4757;"><i>❌</i><p>加载失败</p><p style="font-size: 14px;">请检查服务是否运行</p></div>';
-                });
-        }
-        
-        // 加载日志列表
-        function loadLogs() {
-            const logsList = document.getElementById('logs-list');
-            logsList.innerHTML = '<div class="loading">加载中</div>';
-            
-            fetch('/api/logs')
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
-                .then(logs => {
-                    logsList.innerHTML = '';
-                    
-                    if (logs.length === 0) {
-                        logsList.innerHTML = '<div class="empty-state"><i>📋</i><p>暂无执行日志</p><p style="font-size: 14px;">执行脚本后会生成日志</p></div>';
-                        return;
-                    }
-                    
-                    // 添加全选复选框
-                    const header = document.createElement('div');
-                    header.className = 'log-item';
-                    header.style.fontWeight = '600';
-                    header.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="select-all-logs" onclick="toggleSelectAllLogs()"> 全选</div><div></div>';
-                    logsList.appendChild(header);
-                    
-                    logs.forEach(log => {
-                        const item = document.createElement('div');
-                        item.className = 'log-item';
-                        item.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" class="log-checkbox" value="' + log.name + '"> <div class="log-info"><h4>' + log.name + '</h4><p>' + (log.size / 1024).toFixed(2) + ' KB</p></div></div><div style="display: flex; gap: 10px;"><button class="btn btn-outline" onclick="viewLog(\'' + log.name + '\')">查看</button><button class="btn btn-danger" onclick="deleteLog(\'' + log.name + '\')">删除</button></div>';
-                        logsList.appendChild(item);
-                    });
-                    
-                    // 监听复选框变化
-                    document.querySelectorAll('.log-checkbox').forEach(checkbox => {
-                        checkbox.addEventListener('change', updateDeleteButtonState);
-                    });
-                })
-                .catch(error => {
-                    console.error('加载日志失败:', error);
-                    logsList.innerHTML = '<div class="empty-state" style="color: #ff4757;"><i>❌</i><p>加载失败</p><p style="font-size: 14px;">请检查服务是否运行</p></div>';
-                });
-        }
-        
-        // 切换全选
-        function toggleSelectAllLogs() {
-            const selectAll = document.getElementById('select-all-logs');
-            const checkboxes = document.querySelectorAll('.log-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = selectAll.checked;
-            });
-            updateDeleteButtonState();
-        }
-        
-        // 更新删除按钮状态
-        function updateDeleteButtonState() {
-            const checkedBoxes = document.querySelectorAll('.log-checkbox:checked');
-            const deleteButton = document.getElementById('delete-selected-logs');
-            deleteButton.disabled = checkedBoxes.length === 0;
-        }
-        
-        // 删除单个日志
-        function deleteLog(filename) {
-            showConfirmModal('确定要删除这个日志文件吗？', function() {
-                fetch('/api/logs/delete/' + filename, {
-                    method: 'POST'
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
-                .then(data => {
-                    loadLogs();
-                })
-                .catch(error => {
-                    console.error('删除日志失败:', error);
-                    alert('删除日志失败: ' + error.message);
-                });
-            });
-        }
-        
-        // 删除选中的日志
-        function deleteSelectedLogs() {
-            const checkedBoxes = document.querySelectorAll('.log-checkbox:checked');
-            const filenames = Array.from(checkedBoxes).map(checkbox => checkbox.value);
-            
-            if (filenames.length === 0) {
-                alert('请选择要删除的日志文件');
-                return;
-            }
-            
-            showConfirmModal('确定要删除选中的 ' + filenames.length + ' 个日志文件吗？', function() {
-                fetch('/api/logs/delete', {
+            let uploaded = 0;
+            Array.from(files).forEach(file => {
+                if (!file.name.endsWith('.py')) {
+                    showNotification(`${file.name} 不是 Python 文件`, 'error');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                fetch('/api/script/upload', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ filenames: filenames })
+                    body: formData
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
+                .then(r => r.json())
                 .then(data => {
-                    loadLogs();
-                })
-                .catch(error => {
-                    console.error('删除日志失败:', error);
-                    alert('删除日志失败: ' + error.message);
+                    uploaded++;
+                    if (data.error) {
+                        showNotification(data.error, 'error');
+                    } else if (uploaded === files.length) {
+                        showNotification('上传成功！');
+                        loadScripts();
+                    }
                 });
             });
         }
         
-        // 打开执行脚本模态框
-        function openExecuteModal(scriptName) {
-            document.getElementById('execute-script-name').value = scriptName;
-            document.getElementById('execute-script-display').value = scriptName;
-            document.getElementById('execute-script-args').value = '';
-            document.getElementById('executeModal').classList.add('show');
+        function deleteScript(name) {
+            showConfirm(`确定要删除脚本 "${name}" 吗？`, () => {
+                fetch(`/api/script/delete/${name}`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                        loadScripts();
+                    });
+            });
         }
         
-        // 执行脚本
+        function openExecuteModal(name) {
+            document.getElementById('execute-script-name').value = name;
+            document.getElementById('execute-script-display').value = name;
+            document.getElementById('execute-script-args').value = '';
+            document.getElementById('execute-email-on-success').checked = false;
+            document.getElementById('execute-email-on-failure').checked = false;
+            showModal('executeModal');
+        }
+        
         function executeScript() {
-            const scriptName = document.getElementById('execute-script-name').value;
+            const name = document.getElementById('execute-script-name').value;
             const args = document.getElementById('execute-script-args').value;
             const emailOnSuccess = document.getElementById('execute-email-on-success').checked;
             const emailOnFailure = document.getElementById('execute-email-on-failure').checked;
             
             fetch('/api/execute', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    script: scriptName, 
-                    args: args,
-                    email_on_success: emailOnSuccess,
-                    email_on_failure: emailOnFailure
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ script: name, args, email_on_success: emailOnSuccess, email_on_failure: emailOnFailure })
             })
-            .then(response => {
-                if (!response.ok) throw new Error('网络错误');
-                return response.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 closeModal('executeModal');
-                // 移除提示，直接加载日志
-                setTimeout(loadLogs, 1000);
-            })
-            .catch(error => {
-                console.error('执行脚本失败:', error);
-                alert('执行脚本失败: ' + error.message);
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                } else {
+                    showNotification(`脚本已加入队列，任务ID: ${data.task_id}`);
+                    document.querySelector('[data-tab="queue"]').click();
+                }
             });
         }
         
-        // 打开添加任务模态框
+        // ==================== 执行队列 ====================
+        function loadQueueStatus() {
+            fetch('/api/queue/status')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('stat-pending').textContent = data.pending;
+                    document.getElementById('stat-running').textContent = data.running;
+                    document.getElementById('stat-completed').textContent = data.completed;
+                    document.getElementById('stat-total').textContent = data.total;
+                });
+        }
+        
+        function loadTasks() {
+            fetch('/api/queue/tasks')
+                .then(r => r.json())
+                .then(tasks => {
+                    const container = document.getElementById('task-list');
+                    if (tasks.length === 0) {
+                        container.innerHTML = '<div class="empty-state"><p>暂无任务</p></div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = tasks.map(t => {
+                        const statusClass = t.status.toLowerCase();
+                        const statusText = { '等待中': '⏳', '运行中': '🔄', '已完成': '✅', '失败': '❌', '已停止': '🛑' }[t.status] || '❓';
+                        
+                        let actions = '';
+                        if (t.status === '运行中') {
+                            actions = `<button class="btn btn-danger" onclick="stopTask('${t.id}')">🛑 停止</button>`;
+                        } else {
+                            actions = `<button class="btn btn-primary" onclick="restartTask('${t.id}')">🔄 重新执行</button>`;
+                        }
+                        
+                        return `
+                            <div class="task-item ${statusClass}">
+                                <div class="task-info">
+                                    <h4>${statusText} ${t.script_name}</h4>
+                                    <p>任务ID: ${t.id} | 参数: ${t.args || '无'}</p>
+                                    <p>开始时间: ${t.start_time ? new Date(t.start_time).toLocaleString() : '未开始'}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="task-status status-${statusClass}">${t.status}</span>
+                                    <div class="task-actions" style="margin-top: 10px;">
+                                        ${actions}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+        }
+        
+        function stopTask(taskId) {
+            fetch(`/api/queue/stop/${taskId}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                    loadTasks();
+                    loadQueueStatus();
+                });
+        }
+        
+        function restartTask(taskId) {
+            fetch(`/api/queue/restart/${taskId}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification(data.error, 'error');
+                    } else {
+                        showNotification('任务已重新提交');
+                        loadTasks();
+                        loadQueueStatus();
+                    }
+                });
+        }
+        
+        // ==================== 定时任务 ====================
+        function loadJobs() {
+            fetch('/api/jobs')
+                .then(r => r.json())
+                .then(jobs => {
+                    const container = document.getElementById('jobs-list');
+                    const entries = Object.entries(jobs);
+                    
+                    if (entries.length === 0) {
+                        container.innerHTML = '<div class="empty-state"><p>暂无定时任务</p></div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = entries.map(([id, job]) => `
+                        <div class="job-item">
+                            <div>
+                                <h4>${id}</h4>
+                                <p>脚本: ${job.script} | Cron: ${job.cron}</p>
+                                <p>状态: ${job.enabled ? '✅ 启用' : '❌ 禁用'}</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-outline" onclick="deleteJob('${id}')">🗑️</button>
+                                <button class="btn btn-primary" onclick="editJob('${id}')">✏️</button>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+        
         function openAddJobModal() {
-            document.getElementById('addJobModalTitle').textContent = '添加定时任务';
             document.getElementById('job-id').value = '';
             document.getElementById('job-id-input').value = '';
-            document.getElementById('job-id-input').disabled = false;
-            document.getElementById('job-cron').value = '';
-            document.getElementById('cron-minute').value = '';
-            document.getElementById('cron-hour').value = '';
-            document.getElementById('cron-day').value = '';
-            document.getElementById('cron-month').value = '';
-            document.getElementById('cron-week').value = '';
+            document.getElementById('job-script').value = '';
             document.getElementById('job-args').value = '';
             document.getElementById('job-enabled').checked = true;
-            document.getElementById('addJobModal').classList.add('show');
+            document.getElementById('job-email-on-success').checked = false;
+            document.getElementById('job-email-on-failure').checked = false;
+            showModal('addJobModal');
         }
         
-        // 解析cron表达式到多个输入栏
-        function parseCronExpression(cron) {
-            const parts = cron.split(' ');
-            if (parts.length === 5) {
-                document.getElementById('cron-minute').value = parts[0];
-                document.getElementById('cron-hour').value = parts[1];
-                document.getElementById('cron-day').value = parts[2];
-                document.getElementById('cron-month').value = parts[3];
-                document.getElementById('cron-week').value = parts[4];
-            }
-        }
-        
-        // 组合多个输入栏到cron表达式
-        function buildCronExpression() {
-            const minute = document.getElementById('cron-minute').value || '*';
-            const hour = document.getElementById('cron-hour').value || '*';
-            const day = document.getElementById('cron-day').value || '*';
-            const month = document.getElementById('cron-month').value || '*';
-            const week = document.getElementById('cron-week').value || '*';
-            return `${minute} ${hour} ${day} ${month} ${week}`;
-        }
-        
-        // 编辑任务
-        function editJob(jobId) {
-            fetch('/api/jobs')
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
-                .then(jobs => {
-                    const job = jobs[jobId];
-                    if (!job) throw new Error('任务不存在');
-                    
-                    document.getElementById('addJobModalTitle').textContent = '编辑定时任务';
-                    document.getElementById('job-id').value = jobId;
-                    document.getElementById('job-id-input').value = jobId;
-                    document.getElementById('job-id-input').disabled = true;
-                    document.getElementById('job-script').value = job.script;
-                    document.getElementById('job-cron').value = job.cron;
-                    parseCronExpression(job.cron);
-                    document.getElementById('job-args').value = job.args || '';
-                    document.getElementById('job-enabled').checked = job.enabled;
-                    document.getElementById('addJobModal').classList.add('show');
-                })
-                .catch(error => {
-                    console.error('获取任务详情失败:', error);
-                    alert('获取任务详情失败: ' + error.message);
-                });
-        }
-        
-        // 删除任务
-        function deleteJob(jobId) {
-            showConfirmModal('确定要删除这个任务吗？', function() {
-                fetch('/api/job/delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: jobId })
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
-                .then(data => {
-                    loadJobs();
-                })
-                .catch(error => {
-                    console.error('删除任务失败:', error);
-                    alert('删除任务失败: ' + error.message);
-                });
-            });
-        }
-        
-        // 保存任务
         function saveJob() {
-            const jobId = document.getElementById('job-id').value || document.getElementById('job-id-input').value;
-            const script = document.getElementById('job-script').value;
-            const cron = buildCronExpression();
-            const enabled = document.getElementById('job-enabled').checked;
-            const args = document.getElementById('job-args').value;
-            const emailOnSuccess = document.getElementById('job-email-on-success').checked;
-            const emailOnFailure = document.getElementById('job-email-on-failure').checked;
+            const cron = `${document.getElementById('cron-minute').value} ${document.getElementById('cron-hour').value} ${document.getElementById('cron-day').value} ${document.getElementById('cron-month').value} ${document.getElementById('cron-week').value}`;
             
-            if (!jobId) {
-                alert('任务ID不能为空');
-                return;
-            }
-            if (!script) {
-                alert('请选择脚本');
-                return;
-            }
+            const data = {
+                id: document.getElementById('job-id-input').value,
+                script: document.getElementById('job-script').value,
+                cron: cron,
+                enabled: document.getElementById('job-enabled').checked,
+                args: document.getElementById('job-args').value,
+                email_on_success: document.getElementById('job-email-on-success').checked,
+                email_on_failure: document.getElementById('job-email-on-failure').checked
+            };
             
-            const url = document.getElementById('job-id').value ? '/api/job/update' : '/api/job/add';
-            
-            fetch(url, {
+            fetch('/api/job/add', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    id: jobId, 
-                    script: script, 
-                    cron: cron, 
-                    enabled: enabled, 
-                    args: args,
-                    email_on_success: emailOnSuccess,
-                    email_on_failure: emailOnFailure
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             })
-            .then(response => {
-                if (!response.ok) throw new Error('网络错误');
-                return response.json();
-            })
+            .then(r => r.json())
             .then(data => {
                 closeModal('addJobModal');
-                // 移除提示，直接加载任务列表
+                showNotification(data.message || data.error, data.error ? 'error' : 'success');
                 loadJobs();
-            })
-            .catch(error => {
-                console.error('保存任务失败:', error);
-                alert('保存任务失败: ' + error.message);
             });
         }
         
-        // 查看日志
-        function viewLog(filename) {
-            document.getElementById('log-filename').textContent = filename;
-            document.getElementById('log-content').textContent = '加载中...';
-            
-            fetch('/api/logs/' + filename)
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
+        function deleteJob(id) {
+            showConfirm(`确定要删除任务 "${id}" 吗？`, () => {
+                fetch('/api/job/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
                 })
+                .then(r => r.json())
                 .then(data => {
-                    document.getElementById('log-content').textContent = data.content || '日志内容为空';
-                    document.getElementById('logModal').classList.add('show');
-                })
-                .catch(error => {
-                    console.error('获取日志失败:', error);
-                    document.getElementById('log-content').textContent = '获取日志失败: ' + error.message;
-                    document.getElementById('logModal').classList.add('show');
+                    showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                    loadJobs();
+                });
+            });
+        }
+        
+        // ==================== 日志 ====================
+        function loadLogs() {
+            fetch('/api/logs')
+                .then(r => r.json())
+                .then(logs => {
+                    const container = document.getElementById('logs-list');
+                    if (logs.length === 0) {
+                        container.innerHTML = '<div class="empty-state"><p>暂无日志</p></div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = logs.map(l => `
+                        <div class="log-item">
+                            <div>
+                                <h4>📄 ${l.name}</h4>
+                                <p>${new Date(l.mtime * 1000).toLocaleString()} | ${(l.size/1024).toFixed(1)} KB</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-outline" onclick="viewLog('${l.name}')">👁️ 查看</button>
+                                <button class="btn btn-danger" onclick="deleteLog('${l.name}')">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('');
                 });
         }
         
-        // 加载邮件设置
+        function viewLog(name) {
+            fetch(`/api/logs/${name}`)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('log-filename').textContent = name;
+                    document.getElementById('log-content').textContent = data.content;
+                    showModal('logModal');
+                });
+        }
+        
+        function deleteLog(name) {
+            showConfirm(`确定要删除日志 "${name}" 吗？`, () => {
+                fetch(`/api/logs/delete/${name}`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                        loadLogs();
+                    });
+            });
+        }
+        
+        function deleteAllLogs() {
+            showConfirm('确定要清空所有日志吗？此操作不可恢复！', () => {
+                fetch('/api/logs')
+                    .then(r => r.json())
+                    .then(logs => {
+                        const names = logs.map(l => l.name);
+                        return fetch('/api/logs/delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filenames: names })
+                        });
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        showNotification(data.message, 'success');
+                        loadLogs();
+                    });
+            });
+        }
+        
+        // ==================== 邮件设置 ====================
         function loadEmailSettings() {
             fetch('/api/email/settings')
-                .then(response => {
-                    if (!response.ok) throw new Error('网络错误');
-                    return response.json();
-                })
+                .then(r => r.json())
                 .then(data => {
                     document.getElementById('email-smtp').value = data.smtp || '';
                     document.getElementById('email-port').value = data.port || '';
                     document.getElementById('email-from').value = data.from || '';
                     document.getElementById('email-password').value = data.password || '';
                     document.getElementById('email-to').value = data.to || '';
-                    document.getElementById('email-subject').value = data.subject || '脚本执行通知 - {status}';
-                    document.getElementById('email-template').value = data.template || '脚本名称: {script_name}\n执行状态: {status}\n执行时间: {time}\n\n日志内容:\n{log}';
                     document.getElementById('email-ssl').checked = data.ssl || false;
-                })
-                .catch(error => {
-                    console.error('加载邮件设置失败:', error);
                 });
         }
         
-        // 保存邮件设置
         function saveEmailSettings() {
-            const settings = {
+            const data = {
                 smtp: document.getElementById('email-smtp').value,
                 port: document.getElementById('email-port').value,
                 from: document.getElementById('email-from').value,
                 password: document.getElementById('email-password').value,
                 to: document.getElementById('email-to').value,
-                subject: document.getElementById('email-subject').value,
-                template: document.getElementById('email-template').value,
                 ssl: document.getElementById('email-ssl').checked
             };
             
             fetch('/api/email/settings', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(settings)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             })
-            .then(response => {
-                if (!response.ok) throw new Error('网络错误');
-                return response.json();
-            })
+            .then(r => r.json())
             .then(data => {
-                alert('邮件设置保存成功！');
-            })
-            .catch(error => {
-                console.error('保存邮件设置失败:', error);
-                alert('保存邮件设置失败: ' + error.message);
+                showNotification(data.message || data.error, data.error ? 'error' : 'success');
             });
         }
         
-        // 测试邮件发送
         function testEmail() {
-            fetch('/api/email/test', {
-                method: 'POST'
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('网络错误');
-                return response.json();
-            })
-            .then(data => {
-                alert('测试邮件发送成功！请检查收件箱。');
-            })
-            .catch(error => {
-                console.error('测试邮件发送失败:', error);
-                alert('测试邮件发送失败: ' + error.message);
-            });
+            fetch('/api/email/test', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                });
         }
-        
-        // 打开编辑脚本简介模态框
-        function openEditDescriptionModal(scriptName, description) {
-            document.getElementById('edit-script-name').value = scriptName;
-            document.getElementById('edit-script-display').value = scriptName;
-            document.getElementById('edit-script-description').value = description;
-            document.getElementById('editDescriptionModal').classList.add('show');
-        }
-        
-        // 保存脚本简介
-        function saveScriptDescription() {
-            const scriptName = document.getElementById('edit-script-name').value;
-            const description = document.getElementById('edit-script-description').value;
-            
-            fetch('/api/script/description/' + scriptName, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ description: description })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('网络错误');
-                return response.json();
-            })
-            .then(data => {
-                closeModal('editDescriptionModal');
-                // 移除提示，直接加载脚本列表
-                loadScripts();
-            })
-            .catch(error => {
-                console.error('更新脚本简介失败:', error);
-                alert('更新脚本简介失败: ' + error.message);
-            });
-        }
-        
-        // 关闭模态框
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-        
-        // 显示确认提示框
-        function showConfirmModal(message, onConfirm) {
-            document.getElementById('confirm-message').textContent = message;
-            const confirmButton = document.getElementById('confirm-button');
-            
-            // 移除之前的点击事件
-            confirmButton.onclick = null;
-            
-            // 添加新的点击事件
-            confirmButton.onclick = function() {
-                closeModal('confirmModal');
-                if (onConfirm) {
-                    onConfirm();
-                }
-            };
-            
-            document.getElementById('confirmModal').classList.add('show');
-        }
-        
-        // 点击模态框外部关闭
-        window.onclick = function(event) {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (event.target == modal) {
-                    modal.classList.remove('show');
-                }
-            });
-        }
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            loadScripts();
-            loadEmailSettings();
-        });
     </script>
 </body>
 </html>

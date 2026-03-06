@@ -6,6 +6,9 @@ script_metadata.json
 # 包含密码的脚本文件
 scripts/alist_downloader.py
 
+# Docker 构建脚本
+build-docker.sh
+
 # 日志文件
 logs/
 *.log

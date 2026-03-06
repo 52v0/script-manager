@@ -35,3 +35,48 @@ jobs:
           name: script-manager-image
           path: /tmp/script-manager.tar.gz
           retention-days: 7
+
+      - name: Send success email with attachment
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: '✅ Docker Build Success - ${{ github.repository }}'
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions
+          html_body: |
+            <h2>🎉 Docker 镜像构建成功</h2>
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref_name }}</p>
+            <p><strong>提交:</strong> ${{ github.sha }}</p>
+            <p><strong>状态:</strong> ✅ 成功</p>
+            <p><strong>构建时间:</strong> ${{ github.event.head_commit.timestamp }}</p>
+            <p><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</p>
+            <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看构建详情</a></p>
+            <p>附件为构建好的 Docker 镜像文件，请下载后使用。</p>
+          attachments: /tmp/script-manager.tar.gz
+
+      - name: Send failure email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: '❌ Docker Build Failed - ${{ github.repository }}'
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub Actions
+          html_body: |
+            <h2>❌ Docker 镜像构建失败</h2>
+            <p><strong>仓库:</strong> ${{ github.repository }}</p>
+            <p><strong>分支:</strong> ${{ github.ref_name }}</p>
+            <p><strong>提交:</strong> ${{ github.sha }}</p>
+            <p><strong>状态:</strong> ❌ 失败</p>
+            <p><strong>构建时间:</strong> ${{ github.event.head_commit.timestamp }}</p>
+            <p><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</p>
+            <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">查看错误详情</a></p>
+            <p>请检查代码或 Dockerfile 配置。</p>

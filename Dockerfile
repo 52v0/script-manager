@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY script_manager.py /app/
+# 复制应用代码
+COPY app.py /app/
+COPY app /app/app
 COPY templates /app/templates
 
 # 创建目录并设置权限
@@ -24,4 +26,4 @@ ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
 ENV HOME=/tmp
 
-CMD ["python", "script_manager.py"]
+CMD ["python", "app.py"]

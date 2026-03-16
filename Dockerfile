@@ -13,12 +13,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py /app/
 COPY app /app/app
 COPY templates /app/templates
+COPY entrypoint.sh /app/
 
 # 创建目录并设置权限
-RUN mkdir -p /app/scripts /app/logs && \
-    chmod -R 755 /app
+RUN mkdir -p /app/scripts /app/logs /app/downloads && \
+    chmod -R 755 /app && \
+    chmod +x /app/entrypoint.sh
 
-VOLUME ["/app/scripts", "/app/logs", "/app/script_metadata.json"]
+VOLUME ["/app/scripts", "/app/logs", "/app/downloads"]
 
 EXPOSE 5000
 
@@ -26,4 +28,4 @@ ENV TZ=Asia/Shanghai
 ENV PYTHONUNBUFFERED=1
 ENV HOME=/tmp
 
-CMD ["python", "app.py"]
+CMD ["/app/entrypoint.sh"]

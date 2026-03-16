@@ -72,12 +72,15 @@ def list_log_files(logs_dir):
 
 
 def read_log_file(file_path):
-    """读取日志文件内容"""
+    """读取日志文件内容（倒序）"""
     if not os.path.exists(file_path):
         return None
     try:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            return f.read()
+            lines = f.readlines()
+            # 反转行顺序
+            lines.reverse()
+            return ''.join(lines)
     except Exception as e:
         return str(e)
 

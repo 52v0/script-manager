@@ -7,6 +7,7 @@ import sys
 import datetime
 import threading
 import uuid
+import os
 from enum import Enum
 from app.config import LOGS_DIR, SCRIPTS_DIR
 from app.services.email_service import EmailService
@@ -27,7 +28,8 @@ class ExecutionTask:
     def __init__(self, script_path, args="", email_on_success=False, email_on_failure=False):
         self.id = str(uuid.uuid4())[:8]  # 生成短ID
         self.script_path = script_path
-        self.script_name = script_path.split('/')[-1]
+        # 使用os.path.basename获取脚本名，跨平台兼容
+        self.script_name = os.path.basename(script_path)
         self.args = args
         self.email_on_success = email_on_success
         self.email_on_failure = email_on_failure

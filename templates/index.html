@@ -5,49 +5,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>脚本管理器 - 重构版</title>
     <style>
+        /* 基础样式 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; transition: all 0.3s ease; }
+        
+        /* 亮色主题 */
+        body.light { background: #f0f4f8; color: #2d3748; }
+        body.light .header { background: #3b82f6; color: white; }
+        body.light .nav-tabs { background: white; }
+        body.light .nav-tab:hover:not(.active) { background: #f7fafc; }
+        body.light .tab-content, body.light .card { background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        body.light .card h3 { color: #1a202c; }
+        body.light .btn-outline { background: white; border: 1px solid #3b82f6; color: #3b82f6; }
+        body.light .upload-area { background: #eff6ff; border: 2px dashed #3b82f6; }
+        body.light .upload-area:hover { background: #dbeafe; border-color: #8b5cf6; }
+        body.light .upload-area.dragover { background: #dbeafe; border-color: #8b5cf6; border-style: solid; }
+        body.light .stat-card { background: #3b82f6; color: white; }
+        body.light .task-item, body.light .script-item, body.light .job-item, body.light .log-item { border: 1px solid #e2e8f0; }
+        body.light .task-item:hover, body.light .script-item:hover, body.light .job-item:hover, body.light .log-item:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.15); }
+        body.light .form-label { color: #4a5568; }
+        body.light .form-control, body.light .form-select { border: 1px solid #e2e8f0; background: white; }
+        body.light .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        body.light .modal-content { background: white; }
+        body.light .close { color: #718096; }
+        body.light .close:hover { color: #2d3748; }
+        body.light .empty-state { color: #718096; }
+        body.light .loading { color: #4a5568; }
+        
+        /* 暗色主题 */
+        body.dark { background: #171923; color: #f7fafc; }
+        body.dark .header { background: #2d3748; color: #f7fafc; }
+        body.dark .nav-tabs { background: #2d3748; }
+        body.dark .nav-tab:hover:not(.active) { background: #4a5568; }
+        body.dark .tab-content, body.dark .card { background: #2d3748; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        body.dark .card h3 { color: #f7fafc; }
+        body.dark .btn-outline { background: #2d3748; border: 1px solid #3b82f6; color: #3b82f6; }
+        body.dark .upload-area { background: #2d3748; border: 2px dashed #3b82f6; }
+        body.dark .upload-area:hover { background: #4a5568; border-color: #8b5cf6; }
+        body.dark .upload-area.dragover { background: #4a5568; border-color: #8b5cf6; border-style: solid; }
+        body.dark .stat-card { background: #2d3748; color: #f7fafc; }
+        body.dark .task-item, body.dark .script-item, body.dark .job-item, body.dark .log-item { border: 1px solid #4a5568; }
+        body.dark .task-item:hover, body.dark .script-item:hover, body.dark .job-item:hover, body.dark .log-item:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
+        body.dark .form-label { color: #f7fafc; }
+        body.dark .form-control, body.dark .form-select { border: 1px solid #4a5568; background: #171923; color: #f7fafc; }
+        body.dark .form-control:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+        body.dark .modal-content { background: #2d3748; }
+        body.dark .close { color: #a0aec0; }
+        body.dark .close:hover { color: #f7fafc; }
+        body.dark .empty-state { color: #718096; }
+        body.dark .loading { color: #a0aec0; }
+        
+        /* 通用样式 */
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { 
+            position: relative;
+            padding: 30px; 
+            border-radius: 12px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
         .header h1 { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
-        .nav-tabs { display: flex; background: white; border-radius: 8px; padding: 4px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-wrap: wrap; }
-        .nav-tab { flex: 1; padding: 12px 20px; text-align: center; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; font-weight: 500; min-width: 120px; }
-        .nav-tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 2px 4px rgba(102,126,234,0.3); }
-        .nav-tab:hover:not(.active) { background: #f0f0f0; }
-        .tab-content { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        /* 主题切换背景 */
+        .theme-toggle {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            z-index: 999;
+            width: 165px;
+            height: 120px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 5px;
+        }
+        .theme-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 80px;
+            z-index: 2;
+            cursor: pointer;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        @keyframes arc-move-clockwise {
+            0% {
+                transform: translateX(0) translateY(0);
+                opacity: 1;
+            }
+            20% {
+                transform: translateX(13.51px) translateY(-2px);
+                opacity: 0.9;
+            }
+            40% {
+                transform: translateX(27.02px) translateY(-3.5px);
+                opacity: 0.7;
+            }
+            60% {
+                transform: translateX(40.54px) translateY(-4.5px);
+                opacity: 0.5;
+            }
+            80% {
+                transform: translateX(54.05px) translateY(-3.5px);
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateX(67.56px) translateY(0);
+                opacity: 0;
+            }
+        }
+        .theme-icon {
+            position: absolute;
+            top: 35px;
+            left: 59.5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            z-index: 3;
+            transition: transform 0.67s ease-in-out;
+        }
+        .theme-icon.sun:before {
+            content: "☀️";
+        }
+        .theme-icon.moon:before {
+            content: "🌙";
+        }
+        input:checked + .theme-icon {
+            transform: translateX(67.56px) translateY(0);
+            opacity: 0;
+        }
+        input:checked + .theme-icon.animate {
+            animation: arc-move-clockwise 0.67s ease-in-out forwards;
+        }
+        input:not(:checked) + .theme-icon {
+            transform: translateX(0) translateY(0);
+            opacity: 1;
+        }
+        input:not(:checked) + .theme-icon.animate {
+            animation: arc-move-clockwise 0.67s ease-in-out forwards;
+        }
+        
+        /* 导航栏 */
+        .nav-tabs { display: flex; border-radius: 10px; padding: 6px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-wrap: wrap; gap: 6px; background: #ffffff10; }
+        .nav-tab { flex: 1; padding: 16px 24px; text-align: center; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; font-weight: 500; min-width: 140px; position: relative; overflow: hidden; font-size: 16px; }
+        .nav-tab:hover { transform: translateY(-1px); }
+        .nav-tab.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
+        body.dark .nav-tabs { background: #2d3748; }
+        body.dark .nav-tab { color: #e2e8f0; }
+        body.dark .nav-tab:hover { background: #4a5568; }
+        body.dark .nav-tab.active { box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .tab-content { border-radius: 12px; padding: 30px; }
         .section { display: none; }
         .section.active { display: block; }
-        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #444; }
-        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(102,126,234,0.3); }
-        .btn-outline { background: white; border: 1px solid #667eea; color: #667eea; }
-        .btn-outline:hover { background: #667eea; color: white; }
-        .btn-danger { background: #ff4757; color: white; }
-        .btn-danger:hover { background: #ff3742; }
-        .btn-success { background: #2ed573; color: white; }
-        .btn-success:hover { background: #26b965; }
-        .btn-warning { background: #ffa502; color: white; }
-        .btn-warning:hover { background: #e69500; }
+        
+        /* 卡片 */
+        .card { border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+        
+        /* 按钮 */
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(59,130,246,0.4); }
+        .btn-outline { border: 1px solid #3b82f6; color: #3b82f6; }
+        .btn-outline:hover { background: #3b82f6; color: white; box-shadow: 0 4px 8px rgba(59,130,246,0.2); }
+        .btn-danger { background: #f87171; color: white; }
+        .btn-danger:hover { background: #ef4444; box-shadow: 0 4px 8px rgba(239,68,68,0.3); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; box-shadow: 0 4px 8px rgba(16,185,129,0.3); }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; box-shadow: 0 4px 8px rgba(245,158,11,0.3); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .btn-lg { padding: 12px 24px; font-size: 16px; }
         
         /* 上传区域 */
-        .upload-area { border: 2px dashed #667eea; border-radius: 8px; padding: 40px; text-align: center; background: #f8f9ff; transition: all 0.3s; cursor: pointer; }
-        .upload-area:hover { background: #eef1ff; border-color: #764ba2; }
-        .upload-area.dragover { background: #e8ecff; border-color: #764ba2; border-style: solid; }
+        .upload-area { border-radius: 8px; padding: 40px; text-align: center; transition: all 0.3s; cursor: pointer; }
         .upload-icon { font-size: 48px; margin-bottom: 15px; }
         
         /* 队列状态卡片 */
         .queue-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-card { padding: 20px; border-radius: 8px; text-align: center; }
         .stat-card h4 { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
         .stat-card .number { font-size: 32px; font-weight: bold; }
         
         /* 任务列表 */
         .task-list { margin-top: 20px; }
-        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; transition: all 0.3s; }
-        .task-item:hover { border-color: #667eea; box-shadow: 0 2px 8px rgba(102,126,234,0.1); }
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 6px; margin-bottom: 10px; transition: all 0.3s; }
         .task-item.running { border-left: 4px solid #2ed573; }
         .task-item.pending { border-left: 4px solid #ffa502; }
         .task-item.completed { border-left: 4px solid #667eea; }
@@ -56,6 +215,7 @@
         
         .task-info h4 { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
         .task-info p { font-size: 13px; color: #666; }
+        body.dark .task-info p { color: #aaa; }
         .task-status { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
         .status-running { background: #d4edda; color: #155724; }
         .status-pending { background: #fff3cd; color: #856404; }
@@ -69,48 +229,103 @@
         /* 模态框 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow: auto; }
         .modal.show { display: block; }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { margin: 5% auto; padding: 30px; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 20px; font-weight: 600; }
-        .close { font-size: 24px; cursor: pointer; color: #999; }
-        .close:hover { color: #333; }
+        .close { font-size: 24px; cursor: pointer; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
         
+        /* 表单 */
         .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #444; }
-        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
-        .form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        .form-select { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; background: white; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 10px 12px; border-radius: 6px; font-size: 14px; }
+        .form-select { width: 100%; padding: 10px 12px; border-radius: 6px; font-size: 14px; }
         .form-check { display: flex; align-items: center; gap: 8px; }
         
+        /* 列表 */
         .script-list, .job-list, .log-list { margin-top: 20px; }
-        .script-item, .job-item, .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 10px; }
-        .script-item:hover, .job-item:hover, .log-item:hover { border-color: #667eea; }
+        .script-item, .job-item, .log-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 6px; margin-bottom: 10px; }
         
-        .empty-state { text-align: center; padding: 40px; color: #999; }
-        .loading { text-align: center; padding: 30px; color: #666; }
+        /* 日志搜索 */
+        .log-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .log-search { flex: 1; min-width: 200px; }
+        .log-filter { display: flex; gap: 10px; flex-wrap: wrap; }
         
+        /* 空状态和加载 */
+        .empty-state { text-align: center; padding: 40px; }
+        .loading { text-align: center; padding: 30px; }
+        
+        /* 响应式设计 */
         @media (max-width: 768px) {
             .container { padding: 10px; }
             .nav-tabs { flex-direction: column; }
             .task-item { flex-direction: column; align-items: flex-start; gap: 10px; }
             .task-actions { align-self: flex-end; }
+            .log-controls { flex-direction: column; align-items: stretch; }
+            .log-search { width: 100%; }
+            .log-filter { justify-content: center; }
+            .theme-toggle {
+                position: absolute;
+                top: -20px;
+                right: 10px;
+                width: 140px;
+                height: 100px;
+                align-items: flex-start;
+                padding-top: 3px;
+            }
+            .theme-icon {
+                top: 30px;
+                left: 50px;
+                width: 36px;
+                height: 36px;
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 { font-size: 24px; }
+            .nav-tab { padding: 10px; min-width: 100px; }
+            .tab-content { padding: 20px; }
+            .card { padding: 15px; }
+            .theme-toggle {
+                position: absolute;
+                top: -20px;
+                right: 5px;
+                width: 120px;
+                height: 80px;
+                align-items: flex-start;
+                padding-top: 2px;
+            }
+            .theme-icon {
+                top: 25px;
+                left: 40px;
+                width: 32px;
+                height: 32px;
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <!-- 主题切换 -->
+            <div class="theme-toggle">
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+                    <span class="theme-icon sun"></span>
+                </label>
+            </div>
             <h1>🚀 脚本管理器 v2.0</h1>
             <p>支持执行队列、上传脚本、定时任务和邮件通知</p>
         </div>
         
         <div class="nav-tabs">
-            <div class="nav-tab active" data-tab="scripts">📜 脚本管理</div>
-            <div class="nav-tab" data-tab="queue">⚡ 执行队列</div>
-            <div class="nav-tab" data-tab="schedules">⏰ 定时任务</div>
-            <div class="nav-tab" data-tab="logs">📋 执行日志</div>
-            <div class="nav-tab" data-tab="settings">📧 邮件设置</div>
+            <div class="nav-tab active" data-tab="scripts">📁 脚本管理</div>
+            <div class="nav-tab" data-tab="queue">⚙️ 执行队列</div>
+            <div class="nav-tab" data-tab="schedules">⏱️ 定时任务</div>
+            <div class="nav-tab" data-tab="logs">📊 执行日志</div>
+            <div class="nav-tab" data-tab="settings">✉️ 邮件设置</div>
         </div>
         
         <div class="tab-content">
@@ -184,8 +399,23 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h3>📋 执行日志</h3>
-                        <button class="btn btn-danger" onclick="deleteAllLogs()">🗑️ 清空日志</button>
+                        <button class="btn btn-danger" onclick="deleteAllLogs()">✖ 删除</button>
                     </div>
+                    
+                    <!-- 日志搜索和过滤 -->
+                    <div class="log-controls">
+                        <div class="log-search">
+                            <input type="text" class="form-control" id="log-search" placeholder="搜索日志...">
+                        </div>
+                        <div class="log-filter">
+                            <select class="form-select" id="log-filter-status">
+                                <option value="all">所有状态</option>
+                                <option value="success">成功</option>
+                                <option value="failed">失败</option>
+                            </select>
+                        </div>
+                    </div>
+                    
                     <div class="log-list" id="logs-list">
                         <div class="loading">加载中...</div>
                     </div>
@@ -199,8 +429,8 @@
                     
                     <!-- 导入导出按钮 -->
                     <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                        <button class="btn btn-outline" onclick="importEmailSettings()">📥 导入配置</button>
-                        <button class="btn btn-outline" onclick="exportEmailSettings()">📤 导出配置</button>
+                        <button class="btn btn-primary" onclick="importEmailSettings()">📥 导入配置</button>
+                        <button class="btn btn-primary" onclick="exportEmailSettings()">📤 导出配置</button>
                         <input type="file" id="email-import-file" accept=".json" style="display: none;" onchange="handleEmailImport(event)">
                     </div>
                     
@@ -407,8 +637,73 @@
     </div>
     
     <script>
+        // ==================== 主题切换 ====================
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.nextElementSibling;
+            
+            // 添加动画类
+            themeIcon.classList.add('animate');
+            
+            // 动画进行到一半时提前显示新图标
+            setTimeout(() => {
+                // 切换主题类
+                body.classList.toggle('dark');
+                body.classList.toggle('light');
+                
+                // 更新图标类型
+                if (body.classList.contains('dark')) {
+                    themeIcon.classList.remove('sun');
+                    themeIcon.classList.add('moon');
+                } else {
+                    themeIcon.classList.remove('moon');
+                    themeIcon.classList.add('sun');
+                }
+                
+                // 重置图标的位置和透明度（提前显示新图标）
+                themeIcon.style.transform = 'translateX(-33.78px) translateY(7.5px)';
+                themeIcon.style.opacity = '1';
+                
+                // 移除动画类
+                themeIcon.classList.remove('animate');
+                
+                // 添加进入动画
+                setTimeout(() => {
+                    themeIcon.style.transition = 'transform 0.67s ease-in-out, opacity 0.67s ease-in-out';
+                    themeIcon.style.transform = 'translateX(0) translateY(0)';
+                }, 50);
+            }, 334);
+            
+            // 动画完全结束后更新状态
+            setTimeout(() => {
+                themeToggle.checked = body.classList.contains('dark');
+                localStorage.setItem('theme', body.classList.contains('dark') ? 'dark' : 'light');
+            }, 667);
+        }
+
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化主题
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.nextElementSibling;
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark');
+                themeToggle.checked = true;
+                themeIcon.classList.remove('sun');
+                themeIcon.classList.add('moon');
+            } else {
+                document.body.classList.add('light');
+                themeToggle.checked = false;
+                themeIcon.classList.remove('moon');
+                themeIcon.classList.add('sun');
+            }
+            
+            // 确保图标在中间位置
+            themeIcon.style.transform = 'translateX(0) translateY(0)';
+            themeIcon.style.opacity = '1';
+            
             loadScripts();
             loadQueueStatus();
             loadTasks();
@@ -494,7 +789,7 @@
                                 <p>${s.description || '无简介'} | ${(s.size/1024).toFixed(1)} KB</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-outline" onclick="deleteScript('${s.name}')">🗑️</button>
+                                <button class="btn btn-danger" onclick="deleteScript('${s.name}')">✖ 删除</button>
                                 <button class="btn btn-primary" onclick="openExecuteModal('${s.name}')">▶️ 执行</button>
                             </div>
                         </div>
@@ -676,7 +971,7 @@
                                 <p>状态: ${job.enabled ? '✅ 启用' : '❌ 禁用'}</p>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-outline" onclick="deleteJob('${id}')">🗑️</button>
+                                <button class="btn btn-danger" onclick="deleteJob('${id}')">✖ 删除</button>
                                 <button class="btn btn-primary" onclick="editJob('${id}')">✏️</button>
                             </div>
                         </div>
@@ -755,7 +1050,7 @@
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="btn btn-outline" onclick="viewLog('${l.name}')">👁️ 查看</button>
-                                <button class="btn btn-danger" onclick="deleteLog('${l.name}')">🗑️</button>
+                                <button class="btn btn-danger" onclick="deleteLog('${l.name}')">✖ 删除</button>
                             </div>
                         </div>
                     `).join('');

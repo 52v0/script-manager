@@ -8,9 +8,22 @@ import datetime
 import threading
 import uuid
 import os
+import logging
 from enum import Enum
 from app.config import LOGS_DIR, SCRIPTS_DIR
 from app.services.email_service import EmailService
+
+
+# 配置日志记录器
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(LOGS_DIR, 'service.log')),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger('execution_service')
 
 
 class ExecutionStatus(Enum):
@@ -75,6 +88,33 @@ class ExecutionQueue:
         self.lock = threading.Lock()
         self.max_concurrent = 3  # 最大并发数
         self.running_count = 0
+        # 启动日志清理任务
+        self._start_log_cleanup_task()
+    
+    def _start_log_cleanup_task(self):
+        """启动日志清理定时任务"""
+        def cleanup_logs():
+            """清理过期日志"""
+            try:
+                days_to_keep = 7  # 保留最近7天的日志
+                cutoff_date = datetime.datetime.now() - datetime.timedelta(days=days_to_keep)
+                
+                if os.path.exists(LOGS_DIR):
+                    for file in os.listdir(LOGS_DIR):
+                        file_path = os.path.join(LOGS_DIR, file)
+                        if os.path.isfile(file_path):
+                            file_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+                            if file_mtime < cutoff_date:
+                                os.remove(file_path)
+                                logger.info(f"清理过期日志文件: {file}")
+            except Exception as e:
+                logger.error(f"清理日志失败: {e}")
+            
+            # 每24小时执行一次
+            threading.Timer(24 * 60 * 60, cleanup_logs).start()
+        
+        # 立即执行一次
+        cleanup_logs()
     
     def submit(self, script_path, args="", email_on_success=False, email_on_failure=False):
         """提交执行任务"""
@@ -122,8 +162,8 @@ class ExecutionQueue:
         
         try:
             with open(task.log_file, 'w', encoding='utf-8') as f:
-                f.write(f"[{datetime.datetime.now()}] 开始执行: {task.script_path} {task.args}\n")
-                f.write(f"[{datetime.datetime.now()}] 任务ID: {task.id}\n")
+                f.write(f"[{datetime.datetime.now()}] [INFO] 开始执行: {task.script_path} {task.args}\n")
+                f.write(f"[{datetime.datetime.now()}] [INFO] 任务ID: {task.id}\n")
                 f.flush()
                 
                 # 执行脚本
@@ -140,7 +180,17 @@ class ExecutionQueue:
                 
                 # 实时读取输出
                 for line in task.process.stdout:
-                    f.write(line)
+                    # 尝试识别日志级别
+                    log_level = "INFO"
+                    line_lower = line.lower()
+                    if "error" in line_lower or "exception" in line_lower or "traceback" in line_lower:
+                        log_level = "ERROR"
+                    elif "warning" in line_lower or "warn" in line_lower:
+                        log_level = "WARNING"
+                    elif "debug" in line_lower:
+                        log_level = "DEBUG"
+                    
+                    f.write(f"[{datetime.datetime.now()}] [{log_level}] {line}")
                     f.flush()
                     task.log_content += line
                 
@@ -153,13 +203,14 @@ class ExecutionQueue:
                 success = task.return_code == 0
                 task.status = ExecutionStatus.COMPLETED if success else ExecutionStatus.FAILED
                 
-                f.write(f"[{task.end_time}] 执行完成，退出码: {task.return_code}\n")
+                log_level = "INFO" if success else "ERROR"
+                f.write(f"[{task.end_time}] [{log_level}] 执行完成，退出码: {task.return_code}\n")
                 
         except Exception as e:
             task.end_time = datetime.datetime.now()
             task.status = ExecutionStatus.FAILED
             task.return_code = -1
-            error_msg = f"[{task.end_time}] 执行失败: {e}\n"
+            error_msg = f"[{task.end_time}] [ERROR] 执行失败: {e}\n"
             task.log_content += error_msg
             
             with open(task.log_file, 'a', encoding='utf-8') as f:
@@ -200,7 +251,7 @@ class ExecutionQueue:
                 
                 # 写入日志
                 with open(task.log_file, 'a', encoding='utf-8') as f:
-                    f.write(f"[{task.end_time}] 任务被用户停止\n")
+                    f.write(f"[{task.end_time}] [INFO] 任务被用户停止\n")
                 
                 # 更新运行计数
                 with self.lock:

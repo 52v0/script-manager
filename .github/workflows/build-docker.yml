@@ -56,7 +56,7 @@ jobs:
             <p><strong>构建时间:</strong> ${{ github.event.head_commit.timestamp }}</p>
             <p><strong>提交信息:</strong> ${{ github.event.head_commit.message }}</p>
             <p><strong>镜像大小:</strong> ~52.8 MB</p>
-            <p><strong>下载链接:</strong> <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">点击下载镜像</a></p>
+            <p><strong>下载链接:</strong> <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts">点击下载镜像</a></p>
             <p>镜像文件大小约为 52.8 MB，请从上述链接下载。</p>
 
       - name: Send failure email

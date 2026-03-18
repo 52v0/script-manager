@@ -3,3 +3,4 @@ Werkzeug==2.3.7
 Flask-CORS==4.0.0
 APScheduler==3.10.4
 requests==2.31.0
+APIFlask==2.1.0

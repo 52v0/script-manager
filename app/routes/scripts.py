@@ -99,3 +99,37 @@ def api_update_script_description(script_name):
     if Script.update_description(script_name, description):
         return jsonify({'message': '脚本简介更新成功'})
     return jsonify({'error': '更新失败'}), 500
+
+
+@scripts_bp.route('/api/script/view/<script_name>', methods=['GET'])
+def api_view_script(script_name):
+    """查看脚本内容"""
+    try:
+        script = Script.get(script_name)
+        if not script:
+            return jsonify({'error': '脚本不存在'}), 404
+        
+        content = script.get_content()
+        return jsonify({'content': content})
+    except Exception as e:
+        return jsonify({'error': f'读取失败: {e}'}), 500
+
+
+@scripts_bp.route('/api/scripts/batch-delete', methods=['POST'])
+def api_batch_delete_scripts():
+    """批量删除脚本"""
+    try:
+        data = request.json
+        scripts = data.get('scripts', [])
+        
+        if not scripts:
+            return jsonify({'error': '请选择要删除的脚本'}), 400
+        
+        deleted_count = 0
+        for script_name in scripts:
+            if Script.delete(script_name):
+                deleted_count += 1
+        
+        return jsonify({'message': f'成功删除 {deleted_count} 个脚本'})
+    except Exception as e:
+        return jsonify({'error': f'删除失败: {e}'}), 500

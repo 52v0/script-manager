@@ -318,6 +318,11 @@
             </div>
             <h1>🚀 脚本管理器 v2.0</h1>
             <p>支持执行队列、上传脚本、定时任务和邮件通知</p>
+            <div style="margin-top: 15px;">
+                <a href="/api/docs/index.html" target="_blank" class="api-doc-link" style="color: white; text-decoration: none; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    📚 API文档
+                </a>
+            </div>
         </div>
         
         <div class="nav-tabs">
@@ -342,7 +347,14 @@
                 </div>
                 
                 <div class="card">
-                    <h3>📜 脚本列表</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>📜 脚本列表</h3>
+                        <div class="batch-actions" id="script-batch-actions" style="display: none; gap: 8px;">
+                            <button class="btn btn-outline" onclick="batchDeleteScripts()">✖ 批量删除</button>
+                            <button class="btn btn-primary" onclick="batchExecuteScripts()">▶️ 批量执行</button>
+                            <button class="btn btn-outline" onclick="clearScriptSelection()">取消选择</button>
+                        </div>
+                    </div>
                     <div class="script-list" id="scripts-list">
                         <div class="loading">加载中...</div>
                     </div>
@@ -386,7 +398,15 @@
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h3>⏰ 定时任务</h3>
-                        <button class="btn btn-primary" onclick="openAddJobModal()">+ 添加任务</button>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="batch-actions" id="job-batch-actions" style="display: none; gap: 8px;">
+                                <button class="btn btn-outline" onclick="batchDeleteJobs()">✖ 批量删除</button>
+                                <button class="btn btn-outline" onclick="batchEnableJobs()">✅ 批量启用</button>
+                                <button class="btn btn-outline" onclick="batchDisableJobs()">❌ 批量禁用</button>
+                                <button class="btn btn-outline" onclick="clearJobSelection()">取消选择</button>
+                            </div>
+                            <button class="btn btn-primary" onclick="openAddJobModal()">+ 添加任务</button>
+                        </div>
                     </div>
                     <div class="job-list" id="jobs-list">
                         <div class="loading">加载中...</div>
@@ -636,6 +656,23 @@
         </div>
     </div>
     
+    <!-- 查看脚本模态框 -->
+    <div class="modal" id="viewScriptModal">
+        <div class="modal-content" style="max-width: 900px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>👁️ 查看脚本</h3>
+                <span class="close" onclick="closeModal('viewScriptModal')">&times;</span>
+            </div>
+            <div class="modal-body" style="flex: 1; overflow: auto;">
+                <h4 id="view-script-name" style="margin-bottom: 15px;"></h4>
+                <pre id="view-script-content" style="background: #f8f9fa; padding: 15px; border-radius: 6px; max-height: 600px; overflow: auto; font-family: monospace; font-size: 14px; line-height: 1.5;"></pre>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('viewScriptModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // ==================== 主题切换 ====================
         function toggleTheme() {
@@ -784,11 +821,15 @@
                     
                     container.innerHTML = scripts.map(s => `
                         <div class="script-item">
-                            <div>
-                                <h4>📜 ${s.name}</h4>
-                                <p>${s.description || '无简介'} | ${(s.size/1024).toFixed(1)} KB</p>
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <input type="checkbox" class="script-checkbox" data-name="${s.name}" onclick="updateScriptSelection()">
+                                <div style="flex: 1;">
+                                    <h4>📜 ${s.name}</h4>
+                                    <p>${s.description || '无简介'} | ${(s.size/1024).toFixed(1)} KB</p>
+                                </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-outline" onclick="viewScript('${s.name}')">👁️ 查看</button>
                                 <button class="btn btn-danger" onclick="deleteScript('${s.name}')">✖ 删除</button>
                                 <button class="btn btn-primary" onclick="openExecuteModal('${s.name}')">▶️ 执行</button>
                             </div>
@@ -798,6 +839,178 @@
                     select.innerHTML = '<option value="">请选择脚本</option>' + 
                         scripts.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
                 });
+        }
+        
+        function viewScript(name) {
+            document.getElementById('view-script-name').textContent = name;
+            document.getElementById('view-script-content').textContent = '加载中...';
+            showModal('viewScriptModal');
+            
+            fetch(`/api/script/view/${name}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('view-script-content').textContent = `错误: ${data.error}`;
+                    } else {
+                        document.getElementById('view-script-content').textContent = data.content || '脚本内容为空';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('view-script-content').textContent = `加载失败: ${error.message}`;
+                });
+        }
+        
+        // ==================== 批量操作 ====================
+        function updateScriptSelection() {
+            const selectedCount = document.querySelectorAll('.script-checkbox:checked').length;
+            const batchActions = document.getElementById('script-batch-actions');
+            batchActions.style.display = selectedCount > 0 ? 'flex' : 'none';
+        }
+        
+        function getSelectedScripts() {
+            return Array.from(document.querySelectorAll('.script-checkbox:checked'))
+                .map(checkbox => checkbox.dataset.name);
+        }
+        
+        function batchDeleteScripts() {
+            const selectedScripts = getSelectedScripts();
+            if (selectedScripts.length === 0) return;
+            
+            showConfirm(`确定要删除选中的 ${selectedScripts.length} 个脚本吗？`, () => {
+                fetch('/api/scripts/batch-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ scripts: selectedScripts })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                    loadScripts();
+                })
+                .catch(error => {
+                    showNotification(`删除失败: ${error.message}`, 'error');
+                });
+            });
+        }
+        
+        function batchExecuteScripts() {
+            const selectedScripts = getSelectedScripts();
+            if (selectedScripts.length === 0) return;
+            
+            // 简单批量执行，逐个执行脚本
+            selectedScripts.forEach(scriptName => {
+                fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ script: scriptName })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification(`执行 ${scriptName} 失败: ${data.error}`, 'error');
+                    } else {
+                        showNotification(`脚本 ${scriptName} 已加入执行队列`, 'success');
+                    }
+                })
+                .catch(error => {
+                    showNotification(`执行 ${scriptName} 失败: ${error.message}`, 'error');
+                });
+            });
+        }
+        
+        function clearScriptSelection() {
+            document.querySelectorAll('.script-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateScriptSelection();
+        }
+        
+        // ==================== 定时任务批量操作 ====================
+        function updateJobSelection() {
+            const selectedCount = document.querySelectorAll('.job-checkbox:checked').length;
+            const batchActions = document.getElementById('job-batch-actions');
+            batchActions.style.display = selectedCount > 0 ? 'flex' : 'none';
+        }
+        
+        function getSelectedJobs() {
+            return Array.from(document.querySelectorAll('.job-checkbox:checked'))
+                .map(checkbox => checkbox.dataset.id);
+        }
+        
+        function batchDeleteJobs() {
+            const selectedJobs = getSelectedJobs();
+            if (selectedJobs.length === 0) return;
+            
+            showConfirm(`确定要删除选中的 ${selectedJobs.length} 个任务吗？`, () => {
+                fetch('/api/jobs/batch-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ jobs: selectedJobs })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                    loadJobs();
+                })
+                .catch(error => {
+                    showNotification(`删除失败: ${error.message}`, 'error');
+                });
+            });
+        }
+        
+        function batchEnableJobs() {
+            const selectedJobs = getSelectedJobs();
+            if (selectedJobs.length === 0) return;
+            
+            fetch('/api/jobs/batch-enable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ jobs: selectedJobs, enabled: true })
+            })
+            .then(r => r.json())
+            .then(data => {
+                showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                loadJobs();
+            })
+            .catch(error => {
+                showNotification(`操作失败: ${error.message}`, 'error');
+            });
+        }
+        
+        function batchDisableJobs() {
+            const selectedJobs = getSelectedJobs();
+            if (selectedJobs.length === 0) return;
+            
+            fetch('/api/jobs/batch-enable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ jobs: selectedJobs, enabled: false })
+            })
+            .then(r => r.json())
+            .then(data => {
+                showNotification(data.message || data.error, data.error ? 'error' : 'success');
+                loadJobs();
+            })
+            .catch(error => {
+                showNotification(`操作失败: ${error.message}`, 'error');
+            });
+        }
+        
+        function clearJobSelection() {
+            document.querySelectorAll('.job-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateJobSelection();
         }
         
         function handleFileUpload(event) {
@@ -965,10 +1178,13 @@
                     
                     container.innerHTML = entries.map(([id, job]) => `
                         <div class="job-item">
-                            <div>
-                                <h4>${id}</h4>
-                                <p>脚本: ${job.script} | Cron: ${job.cron}</p>
-                                <p>状态: ${job.enabled ? '✅ 启用' : '❌ 禁用'}</p>
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <input type="checkbox" class="job-checkbox" data-id="${id}" onclick="updateJobSelection()">
+                                <div style="flex: 1;">
+                                    <h4>${id}</h4>
+                                    <p>脚本: ${job.script} | Cron: ${job.cron}</p>
+                                    <p>状态: ${job.enabled ? '✅ 启用' : '❌ 禁用'}</p>
+                                </div>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="btn btn-danger" onclick="deleteJob('${id}')">✖ 删除</button>
@@ -1032,30 +1248,66 @@
         }
         
         // ==================== 日志 ====================
+        let allLogs = [];
+        
         function loadLogs() {
             fetch('/api/logs')
                 .then(r => r.json())
                 .then(logs => {
-                    const container = document.getElementById('logs-list');
-                    if (logs.length === 0) {
-                        container.innerHTML = '<div class="empty-state"><p>暂无日志</p></div>';
-                        return;
-                    }
-                    
-                    container.innerHTML = logs.map(l => `
-                        <div class="log-item">
-                            <div>
-                                <h4>📄 ${l.name}</h4>
-                                <p>${new Date(l.mtime * 1000).toLocaleString()} | ${(l.size/1024).toFixed(1)} KB</p>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-outline" onclick="viewLog('${l.name}')">👁️ 查看</button>
-                                <button class="btn btn-danger" onclick="deleteLog('${l.name}')">✖ 删除</button>
-                            </div>
-                        </div>
-                    `).join('');
+                    allLogs = logs;
+                    filterLogs();
                 });
         }
+        
+        function filterLogs() {
+            const searchTerm = document.getElementById('log-search').value.toLowerCase();
+            const statusFilter = document.getElementById('log-filter-status').value;
+            
+            let filteredLogs = allLogs;
+            
+            // 应用搜索过滤
+            if (searchTerm) {
+                filteredLogs = filteredLogs.filter(log => 
+                    log.name.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // 应用状态过滤
+            if (statusFilter !== 'all') {
+                if (statusFilter === 'success') {
+                    filteredLogs = filteredLogs.filter(log => 
+                        log.name.includes('_success') || !log.name.includes('_failed')
+                    );
+                } else if (statusFilter === 'failed') {
+                    filteredLogs = filteredLogs.filter(log => 
+                        log.name.includes('_failed')
+                    );
+                }
+            }
+            
+            const container = document.getElementById('logs-list');
+            if (filteredLogs.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>暂无日志</p></div>';
+                return;
+            }
+            
+            container.innerHTML = filteredLogs.map(l => `
+                <div class="log-item">
+                    <div>
+                        <h4>📄 ${l.name}</h4>
+                        <p>${new Date(l.mtime * 1000).toLocaleString()} | ${(l.size/1024).toFixed(1)} KB</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline" onclick="viewLog('${l.name}')">👁️ 查看</button>
+                        <button class="btn btn-danger" onclick="deleteLog('${l.name}')">✖ 删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 添加事件监听器
+        document.getElementById('log-search').addEventListener('input', filterLogs);
+        document.getElementById('log-filter-status').addEventListener('change', filterLogs);
         
         function viewLog(name) {
             fetch(`/api/logs/${name}`)

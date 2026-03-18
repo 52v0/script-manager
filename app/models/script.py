@@ -89,3 +89,14 @@ class Script:
             os.remove(path)
             return True
         return False
+    
+    def get_content(self):
+        """获取脚本内容"""
+        if not os.path.exists(self.path):
+            return ''
+        
+        try:
+            with open(self.path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        except Exception as e:
+            return f'读取失败: {e}'

@@ -13,3 +13,9 @@ def index():
     scripts = Script.list_all()
     jobs = load_jobs()
     return render_template('index.html', scripts=scripts, jobs=jobs)
+
+
+@main_bp.route('/api_doc.html')
+def api_doc():
+    """API文档页面"""
+    return render_template('api_doc.html')
